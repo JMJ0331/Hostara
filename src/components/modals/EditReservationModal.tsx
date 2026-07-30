@@ -1,0 +1,214 @@
+import React, { useState, useEffect } from 'react';
+import { X, DollarSign, Calendar } from 'lucide-react';
+import type { Reservation, Platform, ReservationStatus } from '../../types';
+
+interface EditReservationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  reservation: Reservation | null;
+  onUpdateReservation: (id: string, updatedData: Partial<Reservation>) => void;
+}
+
+export const EditReservationModal: React.FC<EditReservationModalProps> = ({
+  isOpen,
+  onClose,
+  reservation,
+  onUpdateReservation
+}) => {
+  if (!isOpen || !reservation) return null;
+
+  const [guestName, setGuestName] = useState(reservation.guestName);
+  const [guestPhone, setGuestPhone] = useState(reservation.guestPhone || '');
+  const [platform, setPlatform] = useState<Platform>(reservation.platform);
+  const [checkIn, setCheckIn] = useState(reservation.checkIn);
+  const [checkOut, setCheckOut] = useState(reservation.checkOut);
+  const [totalPaid, setTotalPaid] = useState<number>(reservation.totalPaid);
+  const [cleaningCost, setCleaningCost] = useState<number>(reservation.cleaningCost);
+  const [status, setStatus] = useState<ReservationStatus>(reservation.status);
+  const [notes, setNotes] = useState(reservation.notes || '');
+
+  useEffect(() => {
+    if (reservation) {
+      setGuestName(reservation.guestName);
+      setGuestPhone(reservation.guestPhone || '');
+      setPlatform(reservation.platform);
+      setCheckIn(reservation.checkIn);
+      setCheckOut(reservation.checkOut);
+      setTotalPaid(reservation.totalPaid);
+      setCleaningCost(reservation.cleaningCost);
+      setStatus(reservation.status);
+      setNotes(reservation.notes || '');
+    }
+  }, [reservation]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdateReservation(reservation.id, {
+      guestName,
+      guestPhone,
+      platform,
+      checkIn,
+      checkOut,
+      totalPaid: Number(totalPaid),
+      cleaningCost: Number(cleaningCost),
+      status,
+      notes
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-3 border-b border-black/10">
+          <div>
+            <h2 className="font-bold text-base text-[#2D2D2D]">Editar Reserva / Asignar Precio</h2>
+            <p className="text-[11px] text-black/50">
+              Propiedad: <strong>{reservation.propertyName}</strong>
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold mb-1">Nombre Huésped:</label>
+              <input
+                type="text"
+                required
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1">Plataforma:</label>
+              <select
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value as Platform)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+              >
+                <option value="Airbnb">Airbnb</option>
+                <option value="Booking">Booking.com</option>
+                <option value="Direct">Directa</option>
+                <option value="Vrbo">Vrbo</option>
+                <option value="Other">Otra</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold mb-1">Check-in:</label>
+              <input
+                type="date"
+                required
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1">Check-out:</label>
+              <input
+                type="date"
+                required
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold mb-1">Monto Total Pagado ($):</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={totalPaid}
+                onChange={(e) => setTotalPaid(Number(e.target.value))}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-bold text-[#2D2D2D]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1">Deducción de Limpieza ($):</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={cleaningCost}
+                onChange={(e) => setCleaningCost(Number(e.target.value))}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-bold text-rose-700"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold mb-1">Estado Reserva:</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as ReservationStatus)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+              >
+                <option value="active">Activa</option>
+                <option value="completed">Completada</option>
+                <option value="cancelled">Cancelada</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1">Teléfono:</label>
+              <input
+                type="text"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+          </div>
+
+          {reservation.externalId && (
+            <div className="p-2.5 bg-purple-50 rounded-xl border border-purple-100 text-[11px] text-purple-900 font-mono">
+              UID iCal: {reservation.externalId}
+            </div>
+          )}
+
+          <div>
+            <label className="block font-semibold mb-1">Notas:</label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl p-2.5 text-xs text-[#2D2D2D]"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary text-xs px-4 py-2"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn-primary text-xs px-5 py-2 shadow-xs"
+            >
+              Actualizar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
