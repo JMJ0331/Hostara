@@ -295,9 +295,60 @@ let cleaningTasks: CleaningTask[] = [
   }
 ];
 
+let customGroups: string[] = ['Rialto Residences', 'Palma Luxury Suites', 'Unidades Individuales'];
+
 let syncLogs: SyncLog[] = [];
 
 // API ENDPOINTS
+
+// 0. Groups / Complexes
+app.get('/api/groups', (req, res) => {
+  const propGroups = properties.map(p => p.group);
+  const all = Array.from(new Set([...customGroups, ...propGroups]));
+  res.json(all);
+});
+
+app.post('/api/groups', (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Nombre de complejo requerido' });
+  }
+  const clean = name.trim();
+  if (!customGroups.includes(clean)) {
+    customGroups.push(clean);
+  }
+  res.status(201).json({ success: true, name: clean });
+});
+
+app.put('/api/groups/:oldName', (req, res) => {
+  const oldName = decodeURIComponent(req.params.oldName);
+  const { newName } = req.body;
+  if (!newName || !newName.trim()) {
+    return res.status(400).json({ error: 'Nuevo nombre requerido' });
+  }
+  const cleanNew = newName.trim();
+
+  const idx = customGroups.indexOf(oldName);
+  if (idx !== -1) customGroups[idx] = cleanNew;
+  else customGroups.push(cleanNew);
+
+  properties.forEach(p => { if (p.group === oldName) p.group = cleanNew; });
+  reservations.forEach(r => { if (r.propertyGroup === oldName) r.propertyGroup = cleanNew; });
+  cleaningTasks.forEach(t => { if (t.propertyGroup === oldName) t.propertyGroup = cleanNew; });
+
+  res.json({ success: true, oldName, newName: cleanNew });
+});
+
+app.delete('/api/groups/:name', (req, res) => {
+  const name = decodeURIComponent(req.params.name);
+  customGroups = customGroups.filter(g => g !== name);
+
+  properties.forEach(p => { if (p.group === name) p.group = 'Unidades Individuales'; });
+  reservations.forEach(r => { if (r.propertyGroup === name) r.propertyGroup = 'Unidades Individuales'; });
+  cleaningTasks.forEach(t => { if (t.propertyGroup === name) t.propertyGroup = 'Unidades Individuales'; });
+
+  res.json({ success: true, message: 'Complejo eliminado' });
+});
 
 // 1. Stats
 app.get('/api/stats', (req, res) => {
@@ -523,6 +574,12 @@ app.post('/api/owners', (req, res) => {
   };
   owners.unshift(newOwner);
   res.status(201).json(newOwner);
+});
+
+app.delete('/api/owners/:id', (req, res) => {
+  const { id } = req.params;
+  owners = owners.filter(o => o.id !== id);
+  res.json({ success: true, message: 'Propietario eliminado' });
 });
 
 // 6. iCal Sync Service

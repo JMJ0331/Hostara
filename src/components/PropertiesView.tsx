@@ -21,8 +21,9 @@ interface PropertiesViewProps {
   properties: Property[];
   groups: string[];
   onOpenNewPropModal: () => void;
+  onOpenManageGroupsModal: () => void;
   onEditProperty: (prop: Property) => void;
-  onDeleteProperty: (id: string) => void;
+  onDeleteProperty: (id: string, name?: string) => void;
   onSyncPropertyICal: (propertyId: string) => void;
 }
 
@@ -30,6 +31,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
   properties,
   groups,
   onOpenNewPropModal,
+  onOpenManageGroupsModal,
   onEditProperty,
   onDeleteProperty,
   onSyncPropertyICal
@@ -70,13 +72,22 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenNewPropModal}
-          className="btn-primary text-xs shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Añadir Propiedad</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenManageGroupsModal}
+            className="btn-secondary text-xs shadow-xs flex items-center gap-1.5"
+          >
+            <Building2 className="w-4 h-4 text-[#2D2D2D]" />
+            <span>Gestionar Complejos</span>
+          </button>
+          <button
+            onClick={onOpenNewPropModal}
+            className="btn-primary text-xs shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Añadir Propiedad</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Tabs by Complex */}
@@ -230,7 +241,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
                       </button>
 
                       <button
-                        onClick={() => onDeleteProperty(prop.id)}
+                        onClick={() => onDeleteProperty(prop.id, prop.name)}
                         className="text-rose-600 hover:underline text-[11px] flex items-center gap-1"
                       >
                         <Trash2 className="w-3 h-3 text-rose-500" />

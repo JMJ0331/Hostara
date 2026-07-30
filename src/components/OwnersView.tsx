@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Plus, Building2, CreditCard, Mail, Phone, DollarSign } from 'lucide-react';
+import { Users, Plus, Building2, CreditCard, Mail, Phone, DollarSign, Trash2 } from 'lucide-react';
 import type { Owner, Property, Reservation } from '../types';
 
 interface OwnersViewProps {
@@ -7,13 +7,15 @@ interface OwnersViewProps {
   properties: Property[];
   reservations: Reservation[];
   onAddOwner: (ownerData: Partial<Owner>) => void;
+  onDeleteOwner: (id: string, name?: string) => void;
 }
 
 export const OwnersView: React.FC<OwnersViewProps> = ({
   owners,
   properties,
   reservations,
-  onAddOwner
+  onAddOwner,
+  onDeleteOwner
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [name, setName] = useState('');
@@ -82,9 +84,18 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                   <h3 className="font-bold text-base text-[#2D2D2D]">{owner.name}</h3>
                   <p className="text-[11px] text-black/50">{owner.email || 'Sin correo'}</p>
                 </div>
-                <span className="status-badge badge-active">
-                  Comisión: {owner.commissionRate}%
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="status-badge badge-active">
+                    Comisión: {owner.commissionRate}%
+                  </span>
+                  <button
+                    onClick={() => onDeleteOwner(owner.id, owner.name)}
+                    className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                    title="Eliminar propietario"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2 text-xs text-black/70">

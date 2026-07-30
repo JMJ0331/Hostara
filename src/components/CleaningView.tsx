@@ -22,7 +22,7 @@ interface CleaningViewProps {
   properties: Property[];
   onOpenNewCleaningModal: () => void;
   onUpdateCleaningStatus: (id: string, status: CleaningStatus, cleanerName?: string) => void;
-  onDeleteCleaningTask: (id: string) => void;
+  onDeleteCleaningTask: (id: string, propertyName?: string) => void;
 }
 
 export const CleaningView: React.FC<CleaningViewProps> = ({
@@ -246,7 +246,7 @@ Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
 
                 <div className="flex justify-end pt-1">
                   <button
-                    onClick={() => onDeleteCleaningTask(task.id)}
+                    onClick={() => onDeleteCleaningTask(task.id, task.propertyName)}
                     className="text-[11px] text-rose-500 hover:underline flex items-center gap-1"
                   >
                     <Trash2 className="w-3 h-3" />

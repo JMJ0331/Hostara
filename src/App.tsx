@@ -12,6 +12,8 @@ import { NewReservationModal } from './components/modals/NewReservationModal';
 import { NewPropertyModal } from './components/modals/NewPropertyModal';
 import { NewCleaningModal } from './components/modals/NewCleaningModal';
 import { EditReservationModal } from './components/modals/EditReservationModal';
+import { ManageGroupsModal } from './components/modals/ManageGroupsModal';
+import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 
 import type { 
   Property, 
@@ -32,6 +34,7 @@ export default function App() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [cleaningTasks, setCleaningTasks] = useState<CleaningTask[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
+  const [customGroupsState, setCustomGroupsState] = useState<string[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     activeBookings: 0,
     checkOutsToday: 0,
@@ -55,17 +58,34 @@ export default function App() {
   const [isNewResModalOpen, setIsNewResModalOpen] = useState<boolean>(false);
   const [isNewPropModalOpen, setIsNewPropModalOpen] = useState<boolean>(false);
   const [isNewCleaningModalOpen, setIsNewCleaningModalOpen] = useState<boolean>(false);
+  const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState<boolean>(false);
   const [selectedReservationToEdit, setSelectedReservationToEdit] = useState<Reservation | null>(null);
+
+  // Confirm delete popup state
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    itemName: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemName: '',
+    onConfirm: () => {}
+  });
 
   // Fetch initial data from backend API
   const fetchAllData = async () => {
     try {
-      const [statsRes, propsRes, resRes, cleanRes, ownersRes] = await Promise.all([
+      const [statsRes, propsRes, resRes, cleanRes, ownersRes, groupsRes] = await Promise.all([
         fetch('/api/stats').then(r => r.json()),
         fetch('/api/properties').then(r => r.json()),
         fetch('/api/reservations').then(r => r.json()),
         fetch('/api/cleaning-tasks').then(r => r.json()),
-        fetch('/api/owners').then(r => r.json())
+        fetch('/api/owners').then(r => r.json()),
+        fetch('/api/groups').then(r => r.json()).catch(() => [])
       ]);
 
       setStats(statsRes);
@@ -73,8 +93,11 @@ export default function App() {
       setReservations(resRes);
       setCleaningTasks(cleanRes);
       setOwners(ownersRes);
+      if (Array.isArray(groupsRes)) {
+        setCustomGroupsState(groupsRes);
+      }
     } catch (err) {
-      console.error('Error fetching RentasMaster data:', err);
+      console.error('Error fetching data:', err);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +108,7 @@ export default function App() {
   }, []);
 
   // Compute unique complex groups
-  const groups = Array.from(new Set(properties.map(p => p.group).filter(Boolean)));
+  const groups = Array.from(new Set([...customGroupsState, ...properties.map(p => p.group).filter(Boolean)]));
 
   // Filter properties & reservations by selected complex
   const filteredProperties = selectedGroup === 'ALL'
@@ -236,14 +259,110 @@ export default function App() {
     }
   };
 
+  const handleDeleteOwner = async (id: string) => {
+    try {
+      await fetch(`/api/owners/${id}`, { method: 'DELETE' });
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error deleting owner:', error);
+    }
+  };
+
+  // Group / Complex CRUD
+  const handleAddGroup = async (name: string) => {
+    try {
+      await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error adding group:', error);
+    }
+  };
+
+  const handleUpdateGroup = async (oldName: string, newName: string) => {
+    try {
+      await fetch(`/api/groups/${encodeURIComponent(oldName)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newName })
+      });
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error updating group:', error);
+    }
+  };
+
+  const handleDeleteGroup = async (name: string) => {
+    try {
+      await fetch(`/api/groups/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error deleting group:', error);
+    }
+  };
+
+  // Request deletion wrappers with confirmation pop-up
+  const requestDeleteProperty = (id: string, name?: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de propiedad',
+      message: '¿Estás seguro de que deseas eliminar esta propiedad? Esta acción eliminará permanentemente la unidad.',
+      itemName: name ? `Propiedad: ${name}` : 'Propiedad seleccionada',
+      onConfirm: () => handleDeleteProperty(id)
+    });
+  };
+
+  const requestDeleteReservation = (id: string, guestName?: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de reserva',
+      message: '¿Estás seguro de que deseas eliminar esta reserva?',
+      itemName: guestName ? `Reserva de: ${guestName}` : 'Reserva seleccionada',
+      onConfirm: () => handleDeleteReservation(id)
+    });
+  };
+
+  const requestDeleteCleaningTask = (id: string, propertyName?: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de limpieza',
+      message: '¿Estás seguro de que deseas eliminar esta tarea de limpieza?',
+      itemName: propertyName ? `Limpieza en: ${propertyName}` : 'Tarea seleccionada',
+      onConfirm: () => handleDeleteCleaningTask(id)
+    });
+  };
+
+  const requestDeleteOwner = (id: string, name?: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de propietario',
+      message: '¿Estás seguro de que deseas eliminar a este propietario?',
+      itemName: name ? `Propietario: ${name}` : 'Propietario seleccionado',
+      onConfirm: () => handleDeleteOwner(id)
+    });
+  };
+
+  const requestDeleteGroup = (groupName: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de complejo',
+      message: '¿Estás seguro de que deseas eliminar este complejo? Las propiedades pertenecientes se reasignarán a "Unidades Individuales".',
+      itemName: `Complejo: ${groupName}`,
+      onConfirm: () => handleDeleteGroup(groupName)
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-base mx-auto animate-pulse">
-            RM
+          <div className="w-10 h-10 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-lg mx-auto animate-pulse">
+            H
           </div>
-          <p className="text-xs font-semibold text-[#2D2D2D]">Cargando RentasMaster...</p>
+          <p className="text-xs font-semibold text-[#2D2D2D]">Cargando Hostara...</p>
         </div>
       </div>
     );
@@ -302,8 +421,9 @@ export default function App() {
               properties={filteredProperties}
               groups={groups}
               onOpenNewPropModal={() => setIsNewPropModalOpen(true)}
+              onOpenManageGroupsModal={() => setIsManageGroupsModalOpen(true)}
               onEditProperty={(prop) => setIsNewPropModalOpen(true)}
-              onDeleteProperty={handleDeleteProperty}
+              onDeleteProperty={requestDeleteProperty}
               onSyncPropertyICal={(pId) => handleSyncSingleICal(pId)}
             />
           )}
@@ -314,7 +434,7 @@ export default function App() {
               onOpenNewResModal={() => setIsNewResModalOpen(true)}
               onOpenICalModal={() => setIsICalModalOpen(true)}
               onSelectReservation={(res) => setSelectedReservationToEdit(res)}
-              onDeleteReservation={handleDeleteReservation}
+              onDeleteReservation={requestDeleteReservation}
             />
           )}
 
@@ -324,7 +444,7 @@ export default function App() {
               properties={properties}
               onOpenNewCleaningModal={() => setIsNewCleaningModalOpen(true)}
               onUpdateCleaningStatus={handleUpdateCleaningStatus}
-              onDeleteCleaningTask={handleDeleteCleaningTask}
+              onDeleteCleaningTask={requestDeleteCleaningTask}
             />
           )}
 
@@ -334,6 +454,7 @@ export default function App() {
               properties={properties}
               reservations={reservations}
               onAddOwner={handleAddOwner}
+              onDeleteOwner={requestDeleteOwner}
             />
           )}
 
@@ -385,6 +506,24 @@ export default function App() {
         onClose={() => setSelectedReservationToEdit(null)}
         reservation={selectedReservationToEdit}
         onUpdateReservation={handleUpdateReservation}
+      />
+
+      <ManageGroupsModal
+        isOpen={isManageGroupsModalOpen}
+        onClose={() => setIsManageGroupsModalOpen(false)}
+        groups={groups}
+        onAddGroup={handleAddGroup}
+        onUpdateGroup={handleUpdateGroup}
+        onRequestDeleteGroup={requestDeleteGroup}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => setDeleteConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={deleteConfirmModal.onConfirm}
+        title={deleteConfirmModal.title}
+        message={deleteConfirmModal.message}
+        itemName={deleteConfirmModal.itemName}
       />
 
     </div>

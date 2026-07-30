@@ -19,6 +19,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [group, setGroup] = useState(groups[0] || 'Rialto Residences');
+  const [isNewGroup, setIsNewGroup] = useState(false);
   const [newGroupInput, setNewGroupInput] = useState('');
   const [ownerId, setOwnerId] = useState(owners[0]?.id || '');
   const [cleaningCost, setCleaningCost] = useState(45);
@@ -34,7 +35,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalGroup = newGroupInput.trim() ? newGroupInput.trim() : group;
+    const finalGroup = isNewGroup ? (newGroupInput.trim() || 'Nuevo Complejo') : group;
     const selectedOwner = owners.find(o => o.id === ownerId);
 
     onCreateProperty({
@@ -81,9 +82,21 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">Complejo / Grupo:</label>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="font-semibold text-xs">Complejo / Grupo:</label>
+              <label className="flex items-center gap-1.5 text-[11px] font-medium text-purple-800 cursor-pointer select-none bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-100">
+                <input
+                  type="checkbox"
+                  checked={isNewGroup}
+                  onChange={(e) => setIsNewGroup(e.target.checked)}
+                  className="rounded border-black/20 text-[#2D2D2D] focus:ring-0"
+                />
+                <span>+ Crear nuevo complejo</span>
+              </label>
+            </div>
+
+            {!isNewGroup ? (
               <select
                 value={group}
                 onChange={(e) => setGroup(e.target.value)}
@@ -95,18 +108,16 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block font-semibold mb-1">Nuevo Complejo (opcional):</label>
+            ) : (
               <input
                 type="text"
+                required
                 value={newGroupInput}
                 onChange={(e) => setNewGroupInput(e.target.value)}
-                placeholder="Ej: Condos Oasis"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                placeholder="Nombre del nuevo complejo..."
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
               />
-            </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

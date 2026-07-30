@@ -23,7 +23,7 @@ interface ReservationsViewProps {
   onOpenNewResModal: () => void;
   onOpenICalModal: () => void;
   onSelectReservation: (res: Reservation) => void;
-  onDeleteReservation: (id: string) => void;
+  onDeleteReservation: (id: string, guestName?: string) => void;
 }
 
 export const ReservationsView: React.FC<ReservationsViewProps> = ({
@@ -255,7 +255,7 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => onDeleteReservation(res.id)}
+                            onClick={() => onDeleteReservation(res.id, res.guestName)}
                             className="p-1.5 hover:bg-rose-50 rounded-md text-rose-500 hover:text-rose-700"
                             title="Eliminar reserva"
                           >
@@ -333,7 +333,7 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                       <span>Editar</span>
                     </button>
                     <button
-                      onClick={() => onDeleteReservation(res.id)}
+                      onClick={() => onDeleteReservation(res.id, res.guestName)}
                       className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg text-xs"
                       title="Eliminar reserva"
                     >
