@@ -58,11 +58,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#2D2D2D] rounded-lg flex items-center justify-center shadow-sm shrink-0">
-              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white rounded-sm"></div>
+              <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
             </div>
             <div>
               <span className="font-bold text-base sm:text-xl tracking-tight italic text-[#2D2D2D] block leading-tight">
-                RentasMaster
+                Hostara
               </span>
             </div>
           </div>
