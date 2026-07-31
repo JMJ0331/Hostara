@@ -6,7 +6,9 @@ import {
   Sparkles, 
   Users, 
   BarChart3,
-  X
+  X,
+  LogOut,
+  User
 } from 'lucide-react';
 
 export type ActiveTab = 'dashboard' | 'properties' | 'reservations' | 'cleaning' | 'owners' | 'reports';
@@ -18,6 +20,8 @@ interface SidebarProps {
   activeBookingsCount: number;
   isMobileMenuOpen?: boolean;
   onCloseMobileMenu?: () => void;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -26,7 +30,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingCleaningCount,
   activeBookingsCount,
   isMobileMenuOpen = false,
-  onCloseMobileMenu
+  onCloseMobileMenu,
+  userEmail,
+  onLogout
 }) => {
   const navItems = [
     {
@@ -128,11 +134,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
+      {/* User Account & Logout Card */}
+      {userEmail && (
+        <div className="mt-6 p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-black/5 text-xs flex items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-[#2D2D2D] text-white flex items-center justify-center shrink-0">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-[#2D2D2D] text-[11px] truncate">{userEmail}</p>
+              <p className="text-[10px] text-emerald-600 font-medium">Sesión activa</p>
+            </div>
+          </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-1.5 text-black/50 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Frosted Glass Pro Accent Card */}
-      <div className="mt-8 p-4 bg-[#F4C7B8]/80 backdrop-blur-sm rounded-xl border border-black/5 text-xs space-y-1">
+      <div className="mt-3 p-3 bg-[#F4C7B8]/80 backdrop-blur-sm rounded-xl border border-black/5 text-xs space-y-1">
         <p className="text-[11px] uppercase font-bold tracking-wider text-[#2D2D2D]">Pro Plan</p>
         <p className="text-xs opacity-80 text-[#2D2D2D]">Rialto Residences Complex</p>
-        <p className="text-[10px] text-black/60 pt-1 font-medium">
+        <p className="text-[10px] text-black/60 pt-0.5 font-medium">
           Sincronizador iCal & Control de Limpieza Activos
         </p>
       </div>

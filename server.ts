@@ -299,6 +299,213 @@ let customGroups: string[] = ['Rialto Residences', 'Palma Luxury Suites', 'Unida
 
 let syncLogs: SyncLog[] = [];
 
+// Auth User Interface & In-Memory Store
+interface AuthUser {
+  id: string;
+  email: string;
+  password: string;
+  verified: boolean;
+  verificationCode?: string;
+  resetCode?: string;
+  createdAt: string;
+}
+
+let users: AuthUser[] = [
+  {
+    id: 'user-demo-1',
+    email: 'demo@hostara.app',
+    password: 'password123',
+    verified: true,
+    createdAt: new Date().toISOString()
+  }
+];
+
+// Helper to generate 6 digit code
+const generateCode = (): string => Math.floor(100000 + Math.random() * 900000).toString();
+
+// AUTH ENDPOINTS
+app.post('/api/auth/register', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const existing = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (existing) {
+    if (existing.verified) {
+      return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
+    } else {
+      // Re-send code for existing unverified user
+      const code = generateCode();
+      existing.verificationCode = code;
+      existing.password = password; // Update password if re-registering
+      console.log(`[EMAIL VERIFICATION SENT] Code for ${cleanEmail}: ${code}`);
+      return res.json({
+        success: true,
+        message: `Código de verificación reenviado a ${cleanEmail}`,
+        devCode: code,
+        email: cleanEmail
+      });
+    }
+  }
+
+  const code = generateCode();
+  const newUser: AuthUser = {
+    id: 'user-' + Date.now(),
+    email: cleanEmail,
+    password,
+    verified: false,
+    verificationCode: code,
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(newUser);
+  console.log(`[EMAIL VERIFICATION SENT] Verification code for ${cleanEmail}: ${code}`);
+
+  res.status(201).json({
+    success: true,
+    message: `Código de verificación enviado a ${cleanEmail}`,
+    devCode: code,
+    email: cleanEmail
+  });
+});
+
+app.post('/api/auth/verify-email', (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ error: 'Correo y código son requeridos' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+
+  if (user.verified) {
+    return res.json({
+      success: true,
+      user: { id: user.id, email: user.email },
+      token: 'jwt-token-' + user.id
+    });
+  }
+
+  if (user.verificationCode !== code.trim()) {
+    return res.status(400).json({ error: 'Código de verificación incorrecto' });
+  }
+
+  user.verified = true;
+  user.verificationCode = undefined;
+
+  res.json({
+    success: true,
+    user: { id: user.id, email: user.email },
+    token: 'jwt-token-' + user.id
+  });
+});
+
+app.post('/api/auth/resend-code', (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Correo requerido' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+
+  const code = generateCode();
+  user.verificationCode = code;
+  console.log(`[RESEND VERIFICATION CODE] Code for ${cleanEmail}: ${code}`);
+
+  res.json({
+    success: true,
+    message: 'Nuevo código enviado',
+    devCode: code
+  });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Ingresa correo y contraseña' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user || user.password !== password) {
+    return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
+  }
+
+  if (!user.verified) {
+    const code = generateCode();
+    user.verificationCode = code;
+    console.log(`[EMAIL VERIFICATION CODE FOR LOGIN] Code for ${cleanEmail}: ${code}`);
+    return res.status(400).json({
+      error: 'Tu correo aún no ha sido verificado. Ingresa el código de verificación.',
+      requiresVerification: true,
+      email: cleanEmail,
+      devCode: code
+    });
+  }
+
+  res.json({
+    success: true,
+    user: { id: user.id, email: user.email },
+    token: 'jwt-token-' + user.id
+  });
+});
+
+app.post('/api/auth/forgot-password', (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Ingresa tu correo' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    return res.status(404).json({ error: 'No existe una cuenta registrada con este correo' });
+  }
+
+  const code = generateCode();
+  user.resetCode = code;
+  console.log(`[FORGOT PASSWORD CODE] Code for ${cleanEmail}: ${code}`);
+
+  res.json({
+    success: true,
+    message: 'Código de recuperación enviado',
+    devCode: code
+  });
+});
+
+app.post('/api/auth/reset-password', (req, res) => {
+  const { email, code, newPassword } = req.body;
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({ error: 'Todos los campos son requeridos' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user || user.resetCode !== code.trim()) {
+    return res.status(400).json({ error: 'Código de recuperación inválido' });
+  }
+
+  user.password = newPassword;
+  user.resetCode = undefined;
+
+  res.json({ success: true, message: 'Contraseña actualizada exitosamente' });
+});
+
 // API ENDPOINTS
 
 // 0. Groups / Complexes

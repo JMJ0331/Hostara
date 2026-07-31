@@ -14,6 +14,7 @@ import { NewCleaningModal } from './components/modals/NewCleaningModal';
 import { EditReservationModal } from './components/modals/EditReservationModal';
 import { ManageGroupsModal } from './components/modals/ManageGroupsModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
+import { AuthView } from './components/AuthView';
 
 import type { 
   Property, 
@@ -25,6 +26,7 @@ import type {
 } from './types';
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState<{ email: string; id?: string } | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -104,8 +106,23 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Check saved session
+    const saved = localStorage.getItem('hostara_session') || sessionStorage.getItem('hostara_session');
+    if (saved) {
+      try {
+        setCurrentUser(JSON.parse(saved));
+      } catch (e) {
+        console.error('Session error:', e);
+      }
+    }
     fetchAllData();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('hostara_session');
+    sessionStorage.removeItem('hostara_session');
+    setCurrentUser(null);
+  };
 
   // Compute unique complex groups
   const groups = Array.from(new Set([...customGroupsState, ...properties.map(p => p.group).filter(Boolean)]));
@@ -368,6 +385,10 @@ export default function App() {
     );
   }
 
+  if (!currentUser) {
+    return <AuthView onLoginSuccess={(u) => setCurrentUser(u)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col font-sans text-[#2D2D2D]">
       
@@ -398,6 +419,8 @@ export default function App() {
           activeBookingsCount={reservations.filter(r => r.status === 'active').length}
           isMobileMenuOpen={isMobileMenuOpen}
           onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+          userEmail={currentUser.email}
+          onLogout={handleLogout}
         />
 
         {/* Main Content Body */}
