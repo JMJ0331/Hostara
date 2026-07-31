@@ -26,7 +26,7 @@ import type {
 } from './types';
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<{ email: string; id?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; firstName?: string; lastName?: string; phone?: string; id?: string } | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -63,18 +63,22 @@ export default function App() {
   const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState<boolean>(false);
   const [selectedReservationToEdit, setSelectedReservationToEdit] = useState<Reservation | null>(null);
 
-  // Confirm delete popup state
+  // Confirm modal popup state
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
     message: string;
     itemName: string;
+    confirmText?: string;
+    subtitle?: string;
     onConfirm: () => void;
   }>({
     isOpen: false,
     title: '',
     message: '',
     itemName: '',
+    confirmText: 'Sí, Confirmar',
+    subtitle: 'Esta acción requiere tu confirmación',
     onConfirm: () => {}
   });
 
@@ -123,6 +127,26 @@ export default function App() {
     sessionStorage.removeItem('hostara_session');
     setCurrentUser(null);
   };
+
+  const requestLogout = () => {
+    const userLabel = currentUser?.firstName
+      ? `${currentUser.firstName} ${currentUser.lastName || ''} (${currentUser.email})`
+      : currentUser?.email || 'Usuario';
+
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: '¿Cerrar Sesión?',
+      message: '¿Estás seguro de que deseas salir de tu cuenta en Hostara?',
+      itemName: userLabel,
+      confirmText: 'Sí, Cerrar Sesión',
+      subtitle: 'Se cerrará tu sesión activa en este dispositivo',
+      onConfirm: () => handleLogout()
+    });
+  };
+
+  const userDisplayName = currentUser?.firstName 
+    ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim() 
+    : (currentUser?.email ? currentUser.email.split('@')[0] : 'Usuario');
 
   // Compute unique complex groups
   const groups = Array.from(new Set([...customGroupsState, ...properties.map(p => p.group).filter(Boolean)]));
@@ -419,8 +443,9 @@ export default function App() {
           activeBookingsCount={reservations.filter(r => r.status === 'active').length}
           isMobileMenuOpen={isMobileMenuOpen}
           onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+          userName={userDisplayName}
           userEmail={currentUser.email}
-          onLogout={handleLogout}
+          onLogout={requestLogout}
         />
 
         {/* Main Content Body */}
@@ -430,6 +455,7 @@ export default function App() {
               stats={stats}
               reservations={filteredReservations}
               cleaningTasks={filteredCleaningTasks}
+              userName={currentUser.firstName || userDisplayName}
               onOpenNewResModal={() => setIsNewResModalOpen(true)}
               onOpenNewPropModal={() => setIsNewPropModalOpen(true)}
               onOpenNewCleaningModal={() => setIsNewCleaningModalOpen(true)}
@@ -547,6 +573,8 @@ export default function App() {
         title={deleteConfirmModal.title}
         message={deleteConfirmModal.message}
         itemName={deleteConfirmModal.itemName}
+        confirmText={deleteConfirmModal.confirmText}
+        subtitle={deleteConfirmModal.subtitle}
       />
 
     </div>

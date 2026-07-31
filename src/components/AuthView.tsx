@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { Building2, Mail, Lock, Eye, EyeOff, Check, KeyRound, ArrowLeft, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, Check, KeyRound, ArrowLeft, RefreshCw, AlertCircle, Sparkles, User, Phone } from 'lucide-react';
+
+interface AuthUser {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  token?: string;
+}
 
 interface AuthViewProps {
-  onLoginSuccess: (user: { email: string; token: string }) => void;
+  onLoginSuccess: (user: AuthUser) => void;
 }
 
 type AuthMode = 'login' | 'register' | 'verify_email' | 'forgot_password' | 'reset_password';
@@ -11,6 +19,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   const [mode, setMode] = useState<AuthMode>('login');
 
   // Form states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -90,8 +101,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     clearAlerts();
 
-    if (!email || !password || !confirmPassword) {
-      setError('Por favor completa todos los campos.');
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      setError('Por favor completa todos los campos obligatorios.');
       return;
     }
 
@@ -110,7 +121,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, rememberMe })
+        body: JSON.stringify({ firstName, lastName, phone, email, password, rememberMe })
       });
       const data = await res.json();
 
@@ -421,7 +432,55 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
 
         {/* REGISTER FORM */}
         {mode === 'register' && (
-          <form onSubmit={handleRegister} className="space-y-4 text-xs">
+          <form onSubmit={handleRegister} className="space-y-3 text-xs">
+            {/* Nombre y Apellido side by side */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block font-semibold text-[#2D2D2D] mb-1">Nombre</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Juan"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-[#2D2D2D] mb-1">Apellido</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Pérez"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Número Personal */}
+            <div>
+              <label className="block font-semibold text-[#2D2D2D] mb-1">Número Personal</label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+52 555 123 4567"
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block font-semibold text-[#2D2D2D] mb-1">Correo Electrónico</label>
               <div className="relative">

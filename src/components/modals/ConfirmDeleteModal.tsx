@@ -8,6 +8,8 @@ interface ConfirmDeleteModalProps {
   title?: string;
   message?: string;
   itemName?: string;
+  confirmText?: string;
+  subtitle?: string;
 }
 
 export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
@@ -16,7 +18,9 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onConfirm,
   title = "Confirmar eliminación",
   message = "¿Estás seguro de que deseas eliminar este elemento?",
-  itemName
+  itemName,
+  confirmText = "Sí, Eliminar",
+  subtitle = "Esta acción no se puede deshacer"
 }) => {
   if (!isOpen) return null;
 
@@ -30,7 +34,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base text-[#2D2D2D]">{title}</h3>
-              <p className="text-xs text-black/50">Esta acción no se puede deshacer</p>
+              <p className="text-xs text-black/50">{subtitle}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black rounded-lg">
@@ -63,7 +67,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             }}
             className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-xs"
           >
-            Sí, Eliminar
+            {confirmText}
           </button>
         </div>
       </div>

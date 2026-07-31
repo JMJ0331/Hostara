@@ -302,6 +302,9 @@ let syncLogs: SyncLog[] = [];
 // Auth User Interface & In-Memory Store
 interface AuthUser {
   id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
   email: string;
   password: string;
   verified: boolean;
@@ -313,6 +316,9 @@ interface AuthUser {
 let users: AuthUser[] = [
   {
     id: 'user-demo-1',
+    firstName: 'Demo',
+    lastName: 'Hostara',
+    phone: '+52 555 123 4567',
     email: 'demo@hostara.app',
     password: 'password123',
     verified: true,
@@ -325,9 +331,9 @@ const generateCode = (): string => Math.floor(100000 + Math.random() * 900000).t
 
 // AUTH ENDPOINTS
 app.post('/api/auth/register', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+  const { firstName, lastName, phone, email, password } = req.body;
+  if (!email || !password || !firstName || !lastName) {
+    return res.status(400).json({ error: 'Todos los campos obligatorios deben ser completados.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
@@ -340,7 +346,10 @@ app.post('/api/auth/register', (req, res) => {
       // Re-send code for existing unverified user
       const code = generateCode();
       existing.verificationCode = code;
-      existing.password = password; // Update password if re-registering
+      existing.password = password;
+      existing.firstName = firstName.trim();
+      existing.lastName = lastName.trim();
+      existing.phone = phone ? phone.trim() : '';
       console.log(`[EMAIL VERIFICATION SENT] Code for ${cleanEmail}: ${code}`);
       return res.json({
         success: true,
@@ -354,6 +363,9 @@ app.post('/api/auth/register', (req, res) => {
   const code = generateCode();
   const newUser: AuthUser = {
     id: 'user-' + Date.now(),
+    firstName: firstName.trim(),
+    lastName: lastName.trim(),
+    phone: phone ? phone.trim() : '',
     email: cleanEmail,
     password,
     verified: false,
@@ -388,7 +400,7 @@ app.post('/api/auth/verify-email', (req, res) => {
   if (user.verified) {
     return res.json({
       success: true,
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone },
       token: 'jwt-token-' + user.id
     });
   }
@@ -402,7 +414,7 @@ app.post('/api/auth/verify-email', (req, res) => {
 
   res.json({
     success: true,
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone },
     token: 'jwt-token-' + user.id
   });
 });
@@ -458,7 +470,7 @@ app.post('/api/auth/login', (req, res) => {
 
   res.json({
     success: true,
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone },
     token: 'jwt-token-' + user.id
   });
 });

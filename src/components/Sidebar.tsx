@@ -20,6 +20,7 @@ interface SidebarProps {
   activeBookingsCount: number;
   isMobileMenuOpen?: boolean;
   onCloseMobileMenu?: () => void;
+  userName?: string;
   userEmail?: string;
   onLogout?: () => void;
 }
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeBookingsCount,
   isMobileMenuOpen = false,
   onCloseMobileMenu,
+  userName,
   userEmail,
   onLogout
 }) => {
@@ -134,38 +136,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* User Account & Logout Card */}
+      {/* User Profile & Logout at bottom of sidebar */}
       {userEmail && (
-        <div className="mt-6 p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-black/5 text-xs flex items-center justify-between gap-2 shadow-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-[#2D2D2D] text-white flex items-center justify-center shrink-0">
+        <div className="mt-auto pt-4 border-t border-black/10 space-y-2.5">
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-black/5">
+            <div className="w-8 h-8 rounded-lg bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
               <User className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-[#2D2D2D] text-[11px] truncate">{userEmail}</p>
-              <p className="text-[10px] text-emerald-600 font-medium">Sesión activa</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-[#2D2D2D] text-xs truncate">
+                {userName || userEmail.split('@')[0]}
+              </p>
+              <p className="text-[10px] text-black/50 truncate">{userEmail}</p>
             </div>
           </div>
+
           {onLogout && (
             <button
               onClick={onLogout}
-              className="p-1.5 text-black/50 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
-              title="Cerrar sesión"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
             >
               <LogOut className="w-4 h-4" />
+              <span>Cerrar Sesión</span>
             </button>
           )}
         </div>
       )}
-
-      {/* Frosted Glass Pro Accent Card */}
-      <div className="mt-3 p-3 bg-[#F4C7B8]/80 backdrop-blur-sm rounded-xl border border-black/5 text-xs space-y-1">
-        <p className="text-[11px] uppercase font-bold tracking-wider text-[#2D2D2D]">Pro Plan</p>
-        <p className="text-xs opacity-80 text-[#2D2D2D]">Rialto Residences Complex</p>
-        <p className="text-[10px] text-black/60 pt-0.5 font-medium">
-          Sincronizador iCal & Control de Limpieza Activos
-        </p>
-      </div>
     </div>
   );
 

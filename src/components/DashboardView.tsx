@@ -20,6 +20,7 @@ interface DashboardViewProps {
   stats: DashboardStats;
   reservations: Reservation[];
   cleaningTasks: CleaningTask[];
+  userName?: string;
   onOpenNewResModal: () => void;
   onOpenNewPropModal: () => void;
   onOpenNewCleaningModal: () => void;
@@ -32,6 +33,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   stats,
   reservations,
   cleaningTasks,
+  userName,
   onOpenNewResModal,
   onOpenNewPropModal,
   onOpenNewCleaningModal,
@@ -40,6 +42,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onSelectReservation
 }) => {
   const todayStr = new Date().toISOString().split('T')[0];
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Buenos días';
+    if (hour >= 12 && hour < 20) return 'Buenas tardes';
+    return 'Buenas noches';
+  };
+
+  const displayName = userName || 'Hostara';
 
   const checkOutsTodayList = reservations.filter(
     (r) => r.checkOut === todayStr && r.status === 'active'
@@ -77,7 +88,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <p className="text-sm text-gray-500 font-medium mb-1 capitalize">{formattedDate}</p>
-          <h1 className="text-3xl font-bold tracking-tight text-[#2D2D2D]">Buenos días, Rialto Residences</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#2D2D2D]">{getGreeting()}, {displayName}</h1>
         </div>
         <div className="flex items-center gap-2">
           <button 
