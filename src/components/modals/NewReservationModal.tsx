@@ -54,8 +54,8 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
           <h2 className="font-bold text-base text-[#2D2D2D]">Crear Nueva Reserva</h2>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
@@ -79,7 +79,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Nombre del Huésped:</label>
               <input
@@ -108,7 +108,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Check-in:</label>
               <input
@@ -132,7 +132,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Monto Total Pagado ($ USD):</label>
               <input

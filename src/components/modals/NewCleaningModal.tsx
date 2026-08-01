@@ -54,8 +54,8 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 border border-black/10 shadow-xl space-y-4">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-600" />
@@ -82,7 +82,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Fecha Programada:</label>
               <input
@@ -107,7 +107,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Personal de Limpieza:</label>
               <input

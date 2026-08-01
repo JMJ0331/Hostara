@@ -60,8 +60,8 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
           <h2 className="font-bold text-base text-[#2D2D2D]">Añadir Nueva Propiedad / Unidad</h2>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
@@ -83,7 +83,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
               <label className="font-semibold text-xs">Complejo / Grupo:</label>
               <label className="flex items-center gap-1.5 text-[11px] font-medium text-purple-800 cursor-pointer select-none bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-100">
                 <input
@@ -120,7 +120,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Propietario:</label>
               <select
@@ -151,7 +151,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Costo de Limpieza ($ USD):</label>
               <input
@@ -177,7 +177,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
               <label className="block font-semibold mb-1">Habitaciones:</label>
               <input

@@ -58,8 +58,8 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
           <div>
             <h2 className="font-bold text-base text-[#2D2D2D]">Editar Reserva / Asignar Precio</h2>
@@ -73,7 +73,7 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Nombre Huésped:</label>
               <input
@@ -101,7 +101,7 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Check-in:</label>
               <input
@@ -125,7 +125,7 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Monto Total Pagado ($ USD):</label>
               <input
@@ -151,7 +151,7 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold mb-1">Estado Reserva:</label>
               <select
