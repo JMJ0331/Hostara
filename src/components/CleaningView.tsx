@@ -61,7 +61,7 @@ export const CleaningView: React.FC<CleaningViewProps> = ({
 📅 *Fecha:* ${task.scheduledDate}
 📍 *Dirección:* ${prop?.address || 'Consultar con administración'}
 🔑 *Acceso / Notas:* ${prop?.notes || task.notes || 'Cerradura inteligente'}
-💰 *Pago de Limpieza:* $${task.cost} MXN
+💰 *Pago de Limpieza:* $${task.cost} USD
 👤 *Encargada:* ${task.assignedCleaner}
 
 Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
@@ -188,7 +188,7 @@ Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
 
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-3.5 h-3.5 text-rose-600" />
-                    <span>Costo Limpieza: <strong className="text-rose-700">${task.cost} MXN</strong></span>
+                    <span>Costo Limpieza: <strong className="text-rose-700">${task.cost} USD</strong></span>
                   </div>
 
                   {task.notes && (

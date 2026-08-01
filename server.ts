@@ -307,6 +307,7 @@ interface AuthUser {
   phone: string;
   email: string;
   password: string;
+  avatarUrl?: string;
   verified: boolean;
   verificationCode?: string;
   resetCode?: string;
@@ -321,6 +322,7 @@ let users: AuthUser[] = [
     phone: '+52 555 123 4567',
     email: 'demo@hostara.app',
     password: 'password123',
+    avatarUrl: '',
     verified: true,
     createdAt: new Date().toISOString()
   }
@@ -516,6 +518,69 @@ app.post('/api/auth/reset-password', (req, res) => {
   user.resetCode = undefined;
 
   res.json({ success: true, message: 'Contraseña actualizada exitosamente' });
+});
+
+app.post('/api/auth/update-profile', (req, res) => {
+  const { email, currentPassword, firstName, lastName, phone, newEmail, avatarUrl } = req.body;
+  if (!email || !currentPassword) {
+    return res.status(400).json({ error: 'Debes confirmar con tu contraseña actual para guardar cambios.' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user || user.password !== currentPassword) {
+    return res.status(400).json({ error: 'La contraseña actual es incorrecta. Verificación de seguridad fallida.' });
+  }
+
+  // If changing email, check uniqueness
+  if (newEmail && newEmail.trim().toLowerCase() !== cleanEmail) {
+    const targetEmail = newEmail.trim().toLowerCase();
+    const existing = users.find(u => u.email.toLowerCase() === targetEmail);
+    if (existing) {
+      return res.status(400).json({ error: 'El nuevo correo electrónico ya está registrado en otra cuenta.' });
+    }
+    user.email = targetEmail;
+  }
+
+  if (firstName !== undefined) user.firstName = firstName.trim();
+  if (lastName !== undefined) user.lastName = lastName.trim();
+  if (phone !== undefined) user.phone = phone.trim();
+  if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+
+  res.json({
+    success: true,
+    message: 'Perfil actualizado correctamente.',
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl
+    }
+  });
+});
+
+app.post('/api/auth/change-password', (req, res) => {
+  const { email, currentPassword, newPassword } = req.body;
+  if (!email || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user || user.password !== currentPassword) {
+    return res.status(400).json({ error: 'La contraseña actual ingresada es incorrecta.' });
+  }
+
+  user.password = newPassword;
+  res.json({ success: true, message: 'Tu contraseña ha sido actualizada con éxito.' });
 });
 
 // API ENDPOINTS

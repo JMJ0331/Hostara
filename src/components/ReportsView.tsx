@@ -127,33 +127,33 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rm-card p-5">
-          <span className="text-xs font-semibold text-black/50 uppercase">Ingresos BrutosTotales</span>
+          <span className="text-xs font-semibold text-black/50 uppercase">Ingresos Brutos Totales (USD)</span>
           <div className="text-2xl font-bold text-[#2D2D2D] mt-1">
-            ${totalGrossIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${totalGrossIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
           </div>
           <span className="text-[11px] text-black/50">Antes de deducciones</span>
         </div>
 
         <div className="rm-card p-5">
-          <span className="text-xs font-semibold text-black/50 uppercase">Gastos de Limpieza</span>
+          <span className="text-xs font-semibold text-black/50 uppercase">Gastos de Limpieza (USD)</span>
           <div className="text-2xl font-bold text-rose-700 mt-1">
-            -${totalCleaningCosts.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            -${totalCleaningCosts.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
           </div>
           <span className="text-[11px] text-black/50">Costo operativo pagado</span>
         </div>
 
         <div className="rm-card p-5">
-          <span className="text-xs font-semibold text-black/50 uppercase">Comisiones Gestor (SGR)</span>
+          <span className="text-xs font-semibold text-black/50 uppercase">Comisiones Gestor (USD)</span>
           <div className="text-2xl font-bold text-purple-800 mt-1">
-            ${estimatedManagementCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${estimatedManagementCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
           </div>
           <span className="text-[11px] text-black/50">Ingreso por administración</span>
         </div>
 
         <div className="rm-card p-5 bg-[#FAFAF8] border-black/15">
-          <span className="text-xs font-semibold text-black/50 uppercase">Pago Neto a Propietarios</span>
+          <span className="text-xs font-semibold text-black/50 uppercase">Pago Neto Propietarios (USD)</span>
           <div className="text-2xl font-bold text-emerald-800 mt-1">
-            ${totalOwnerPayouts.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${totalOwnerPayouts.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
           </div>
           <span className="text-[11px] text-emerald-700 font-medium">Monto final a transferir</span>
         </div>

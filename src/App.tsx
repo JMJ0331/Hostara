@@ -14,6 +14,7 @@ import { NewCleaningModal } from './components/modals/NewCleaningModal';
 import { EditReservationModal } from './components/modals/EditReservationModal';
 import { ManageGroupsModal } from './components/modals/ManageGroupsModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
+import { AccountSettingsModal } from './components/modals/AccountSettingsModal';
 import { AuthView } from './components/AuthView';
 
 import type { 
@@ -26,10 +27,18 @@ import type {
 } from './types';
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<{ email: string; firstName?: string; lastName?: string; phone?: string; id?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; firstName?: string; lastName?: string; phone?: string; avatarUrl?: string; id?: string } | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Enforce light mode across application
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
+
+  // Modals state
+  const [isAccountSettingsModalOpen, setIsAccountSettingsModalOpen] = useState<boolean>(false);
 
   // Main Datasets
   const [properties, setProperties] = useState<Property[]>([]);
@@ -129,18 +138,23 @@ export default function App() {
   };
 
   const requestLogout = () => {
-    const userLabel = currentUser?.firstName
-      ? `${currentUser.firstName} ${currentUser.lastName || ''} (${currentUser.email})`
-      : currentUser?.email || 'Usuario';
-
     setDeleteConfirmModal({
       isOpen: true,
       title: '¿Cerrar Sesión?',
       message: '¿Estás seguro de que deseas salir de tu cuenta en Hostara?',
-      itemName: userLabel,
+      itemName: '',
       confirmText: 'Sí, Cerrar Sesión',
       subtitle: 'Se cerrará tu sesión activa en este dispositivo',
       onConfirm: () => handleLogout()
+    });
+  };
+
+  const handleUpdateUserProfile = (updated: { email: string; firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }) => {
+    setCurrentUser(prev => {
+      if (!prev) return null;
+      const newObj = { ...prev, ...updated };
+      localStorage.setItem('hostara_session', JSON.stringify(newObj));
+      return newObj;
     });
   };
 
@@ -445,7 +459,9 @@ export default function App() {
           onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
           userName={userDisplayName}
           userEmail={currentUser.email}
+          avatarUrl={currentUser.avatarUrl}
           onLogout={requestLogout}
+          onOpenAccountSettings={() => setIsAccountSettingsModalOpen(true)}
         />
 
         {/* Main Content Body */}
@@ -575,6 +591,19 @@ export default function App() {
         itemName={deleteConfirmModal.itemName}
         confirmText={deleteConfirmModal.confirmText}
         subtitle={deleteConfirmModal.subtitle}
+      />
+
+      <AccountSettingsModal
+        isOpen={isAccountSettingsModalOpen}
+        onClose={() => setIsAccountSettingsModalOpen(false)}
+        currentUser={{
+          email: currentUser.email,
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          phone: currentUser.phone,
+          avatarUrl: currentUser.avatarUrl
+        }}
+        onUpdateUser={handleUpdateUserProfile}
       />
 
     </div>

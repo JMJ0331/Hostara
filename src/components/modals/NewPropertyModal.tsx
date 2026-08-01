@@ -153,7 +153,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold mb-1">Costo de Limpieza ($ MXN):</label>
+              <label className="block font-semibold mb-1">Costo de Limpieza ($ USD):</label>
               <input
                 type="number"
                 required
@@ -165,7 +165,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Tarifa por Noche Base ($):</label>
+              <label className="block font-semibold mb-1">Tarifa por Noche Base ($ USD):</label>
               <input
                 type="number"
                 required

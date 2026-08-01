@@ -181,11 +181,11 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
                     <div className="mt-4 p-3 bg-[#FAFAF8] rounded-xl border border-black/5 grid grid-cols-2 gap-2 text-xs">
                       <div className="min-w-0">
                         <span className="text-[10px] text-black/40 uppercase font-semibold block truncate">Tarifa Noche</span>
-                        <span className="font-bold text-[#2D2D2D] text-sm block truncate">${prop.nightlyRateDefault || 120}</span>
+                        <span className="font-bold text-[#2D2D2D] text-sm block truncate">${prop.nightlyRateDefault || 120} USD</span>
                       </div>
                       <div className="min-w-0">
                         <span className="text-[10px] text-black/40 uppercase font-semibold block truncate">Costo Limpieza</span>
-                        <span className="font-bold text-rose-700 text-sm block truncate">${prop.cleaningCost}</span>
+                        <span className="font-bold text-rose-700 text-sm block truncate">${prop.cleaningCost} USD</span>
                       </div>
                     </div>
 

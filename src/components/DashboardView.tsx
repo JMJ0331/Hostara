@@ -104,13 +104,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Ingresos Netos</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Ingresos Netos (USD)</p>
             <p className="text-2xl font-bold text-[#2D2D2D]">
-              ${stats.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${stats.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
             </p>
           </div>
           <div className="mt-2 text-[10px] text-green-600 font-bold bg-green-50 w-fit px-2 py-0.5 rounded">
-            Bruto: ${stats.totalRevenue.toLocaleString()}
+            Bruto: ${stats.totalRevenue.toLocaleString()} USD
           </div>
         </div>
 

@@ -8,7 +8,8 @@ import {
   BarChart3,
   X,
   LogOut,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 
 export type ActiveTab = 'dashboard' | 'properties' | 'reservations' | 'cleaning' | 'owners' | 'reports';
@@ -22,7 +23,9 @@ interface SidebarProps {
   onCloseMobileMenu?: () => void;
   userName?: string;
   userEmail?: string;
+  avatarUrl?: string;
   onLogout?: () => void;
+  onOpenAccountSettings?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +37,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobileMenu,
   userName,
   userEmail,
-  onLogout
+  avatarUrl,
+  onLogout,
+  onOpenAccountSettings
 }) => {
   const navItems = [
     {
@@ -139,17 +144,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* User Profile & Logout at bottom of sidebar */}
       {userEmail && (
         <div className="mt-auto pt-4 border-t border-black/10 space-y-2.5">
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-xl border border-black/5">
-            <div className="w-8 h-8 rounded-lg bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              <User className="w-4 h-4" />
-            </div>
+          <button
+            onClick={onOpenAccountSettings}
+            type="button"
+            className="w-full text-left flex items-center gap-2.5 px-3 py-2 bg-white/90 hover:bg-white backdrop-blur-sm rounded-xl border border-black/10 hover:border-black/20 transition-all group cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
+            title="Abrir configuración de cuenta"
+          >
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt="Avatar" 
+                className="w-8 h-8 rounded-lg object-cover border border-black/10 shrink-0 shadow-2xs"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                <User className="w-4 h-4" />
+              </div>
+            )}
+
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-[#2D2D2D] text-xs truncate">
+              <p className="font-bold text-[#2D2D2D] text-xs truncate group-hover:text-black">
                 {userName || userEmail.split('@')[0]}
               </p>
-              <p className="text-[10px] text-black/50 truncate">{userEmail}</p>
+              <p className="text-[10px] text-black/50 truncate group-hover:text-black/70">{userEmail}</p>
             </div>
-          </div>
+
+            <Settings className="w-4 h-4 text-black/30 group-hover:text-black/70 group-hover:rotate-45 transition-all shrink-0" />
+          </button>
 
           {onLogout && (
             <button

@@ -40,6 +40,22 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleMobileMenu
 }) => {
   const [quickAddOpen, setQuickAddOpen] = React.useState(false);
+  const quickAddRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (quickAddRef.current && !quickAddRef.current.contains(event.target as Node)) {
+        setQuickAddOpen(false);
+      }
+    };
+
+    if (quickAddOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [quickAddOpen]);
 
   return (
     <header className="sticky top-0 z-30 bg-[#FAFAF8]/95 backdrop-blur-md border-b border-black/5 px-3 sm:px-6 md:px-8 py-2.5 sm:py-3.5 transition-all">
@@ -114,10 +130,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Quick Add Menu */}
-          <div className="relative">
+          <div className="relative" ref={quickAddRef}>
             <button
               onClick={() => setQuickAddOpen(!quickAddOpen)}
-              className="bg-[#2D2D2D] text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium shadow-md shadow-black/10 flex items-center gap-1.5 hover:bg-black/80 transition-all text-xs"
+              className="bg-[#2D2D2D] text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium shadow-md shadow-black/10 flex items-center gap-1.5 hover:bg-black/80 text-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Nueva Reserva</span>
@@ -126,59 +142,53 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {quickAddOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setQuickAddOpen(false)} 
-                />
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-black/5 rounded-2xl shadow-lg z-50 py-2 text-xs">
-                  <button
-                    onClick={() => {
-                      setQuickAddOpen(false);
-                      onOpenNewResModal();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-[#F4C7B8]" />
-                    <span>Nueva Reserva</span>
-                  </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-black/5 rounded-2xl shadow-lg z-50 py-2 text-xs animate-fade-in">
+                <button
+                  onClick={() => {
+                    setQuickAddOpen(false);
+                    onOpenNewResModal();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium cursor-pointer"
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#F4C7B8]" />
+                  <span>Nueva Reserva</span>
+                </button>
 
-                  <button
-                    onClick={() => {
-                      setQuickAddOpen(false);
-                      onOpenNewPropModal();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-[#D9E8D2]" />
-                    <span>Nueva Propiedad</span>
-                  </button>
+                <button
+                  onClick={() => {
+                    setQuickAddOpen(false);
+                    onOpenNewPropModal();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium cursor-pointer"
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#D9E8D2]" />
+                  <span>Nueva Propiedad</span>
+                </button>
 
-                  <button
-                    onClick={() => {
-                      setQuickAddOpen(false);
-                      onOpenNewCleaningModal();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-[#D9D2F4]" />
-                    <span>Tarea de Limpieza</span>
-                  </button>
+                <button
+                  onClick={() => {
+                    setQuickAddOpen(false);
+                    onOpenNewCleaningModal();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2.5 font-medium cursor-pointer"
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#D9D2F4]" />
+                  <span>Tarea de Limpieza</span>
+                </button>
 
-                  <div className="h-[1px] bg-black/5 my-1" />
+                <div className="h-[1px] bg-black/5 my-1" />
 
-                  <button
-                    onClick={() => {
-                      setQuickAddOpen(false);
-                      onOpenICalModal();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2 font-medium"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                    <span>Configurar iCal</span>
-                  </button>
-                </div>
-              </>
+                <button
+                  onClick={() => {
+                    setQuickAddOpen(false);
+                    onOpenICalModal();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-[#FAFAF8] text-[#2D2D2D] flex items-center gap-2 font-medium cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Configurar iCal</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -134,7 +134,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold mb-1">Monto Total Pagado ($):</label>
+              <label className="block font-semibold mb-1">Monto Total Pagado ($ USD):</label>
               <input
                 type="number"
                 required
