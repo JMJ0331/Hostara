@@ -147,7 +147,7 @@ export const ICalSyncModal: React.FC<ICalSyncModalProps> = ({
               <select
                 value={selectedPropId}
                 onChange={(e) => setSelectedPropId(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D] focus:outline-none focus:border-black/30"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 focus:bg-white transition-all cursor-pointer shadow-2xs truncate"
               >
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>

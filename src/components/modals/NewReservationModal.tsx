@@ -64,40 +64,28 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-semibold mb-1">Propiedad:</label>
-            <select
-              value={propertyId}
-              onChange={(e) => setPropertyId(e.target.value)}
-              className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
-            >
-              {properties.map((p) => (
-                <option key={p.id} value={p.id}>
-                  🏢 {p.name} ({p.group}) — ${p.nightlyRateDefault}/noche
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Nombre del Huésped:</label>
-              <input
-                type="text"
-                required
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Ej: Sofia Martinez"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-              />
+              <label className="block font-semibold mb-1 truncate">Propiedad:</label>
+              <select
+                value={propertyId}
+                onChange={(e) => setPropertyId(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] truncate"
+              >
+                {properties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    🏢 {p.name} ({p.group}) — ${p.nightlyRateDefault}/noche
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Plataforma:</label>
+              <label className="block font-semibold mb-1 truncate">Plataforma:</label>
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as Platform)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer shadow-2xs truncate"
               >
                 <option value="Direct">Directa / Particular</option>
                 <option value="Airbnb">Airbnb</option>
@@ -108,51 +96,76 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Check-in:</label>
+              <label className="block font-semibold mb-1 truncate">Nombre del Huésped:</label>
+              <input
+                type="text"
+                required
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder="Ej: Sofia Martinez"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 truncate">Teléfono Huésped:</label>
+              <input
+                type="text"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
+                placeholder="+52 55 1234 5678"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div>
+              <label className="block font-semibold mb-1 truncate">Check-in:</label>
               <input
                 type="date"
                 required
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Check-out:</label>
+              <label className="block font-semibold mb-1 truncate">Check-out:</label>
               <input
                 type="date"
                 required
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Monto Total Pagado ($ USD):</label>
+              <label className="block font-semibold mb-1 truncate">Monto Total ($ USD):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={totalPaid}
                 onChange={(e) => setTotalPaid(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-bold text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-bold text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Teléfono Huésped:</label>
+              <label className="block font-semibold mb-1 truncate">Correo Huésped:</label>
               <input
-                type="text"
-                value={guestPhone}
-                onChange={(e) => setGuestPhone(e.target.value)}
-                placeholder="+52 55 1234 5678"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                type="email"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                placeholder="sofia@ejemplo.com"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>

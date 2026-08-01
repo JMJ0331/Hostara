@@ -73,24 +73,24 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Nombre Huésped:</label>
+              <label className="block font-semibold mb-1 truncate">Nombre Huésped:</label>
               <input
                 type="text"
                 required
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Plataforma:</label>
+              <label className="block font-semibold mb-1 truncate">Plataforma:</label>
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as Platform)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D]"
               >
                 <option value="Airbnb">Airbnb</option>
                 <option value="Booking">Booking.com</option>
@@ -101,63 +101,63 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Check-in:</label>
+              <label className="block font-semibold mb-1 truncate">Check-in:</label>
               <input
                 type="date"
                 required
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Check-out:</label>
+              <label className="block font-semibold mb-1 truncate">Check-out:</label>
               <input
                 type="date"
                 required
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Monto Total Pagado ($ USD):</label>
+              <label className="block font-semibold mb-1 truncate">Monto Total ($ USD):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={totalPaid}
                 onChange={(e) => setTotalPaid(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-bold text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-bold text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Deducción de Limpieza ($):</label>
+              <label className="block font-semibold mb-1 truncate">Costo Limpieza ($):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={cleaningCost}
                 onChange={(e) => setCleaningCost(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-bold text-rose-700"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-bold text-rose-700"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Estado Reserva:</label>
+              <label className="block font-semibold mb-1 truncate">Estado Reserva:</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ReservationStatus)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D]"
               >
                 <option value="active">Activa</option>
                 <option value="completed">Completada</option>
@@ -166,12 +166,12 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Teléfono:</label>
+              <label className="block font-semibold mb-1 truncate">Teléfono:</label>
               <input
                 type="text"
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>

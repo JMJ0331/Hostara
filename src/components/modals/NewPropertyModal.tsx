@@ -70,63 +70,67 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-semibold mb-1">Nombre de la Unidad / Apartamento:</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Apartamento 203 Sea View"
-              className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-              <label className="font-semibold text-xs">Complejo / Grupo:</label>
-              <label className="flex items-center gap-1.5 text-[11px] font-medium text-purple-800 cursor-pointer select-none bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-100">
-                <input
-                  type="checkbox"
-                  checked={isNewGroup}
-                  onChange={(e) => setIsNewGroup(e.target.checked)}
-                  className="rounded border-black/20 text-[#2D2D2D] focus:ring-0"
-                />
-                <span>+ Crear nuevo complejo</span>
-              </label>
-            </div>
-
-            {!isNewGroup ? (
-              <select
-                value={group}
-                onChange={(e) => setGroup(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
-              >
-                {groups.map((g) => (
-                  <option key={g} value={g}>
-                    🏢 {g}
-                  </option>
-                ))}
-              </select>
-            ) : (
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div>
+              <div className="flex items-center h-6 mb-1">
+                <label className="font-semibold text-xs truncate">Nombre de Unidad:</label>
+              </div>
               <input
                 type="text"
                 required
-                value={newGroupInput}
-                onChange={(e) => setNewGroupInput(e.target.value)}
-                placeholder="Nombre del nuevo complejo..."
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ej: Apto 203 Sea View"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
-            )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between h-6 mb-1 gap-1">
+                <label className="font-semibold text-xs truncate">Complejo / Grupo:</label>
+                <label className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-purple-800 cursor-pointer select-none bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={isNewGroup}
+                    onChange={(e) => setIsNewGroup(e.target.checked)}
+                    className="rounded border-black/20 text-[#2D2D2D] focus:ring-0"
+                  />
+                  <span>+ Nuevo</span>
+                </label>
+              </div>
+
+              {!isNewGroup ? (
+                <select
+                  value={group}
+                  onChange={(e) => setGroup(e.target.value)}
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer shadow-2xs truncate"
+                >
+                  {groups.map((g) => (
+                    <option key={g} value={g}>
+                      🏢 {g}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  required
+                  value={newGroupInput}
+                  onChange={(e) => setNewGroupInput(e.target.value)}
+                  placeholder="Nuevo complejo..."
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                />
+              )}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Propietario:</label>
+              <label className="block font-semibold mb-1 truncate">Propietario:</label>
               <select
                 value={ownerId}
                 onChange={(e) => setOwnerId(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer shadow-2xs truncate"
               >
                 {owners.map((o) => (
                   <option key={o.id} value={o.id}>
@@ -137,11 +141,11 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Plataforma Principal:</label>
+              <label className="block font-semibold mb-1 truncate">Plataforma Base:</label>
               <select
                 value={platformDefault}
                 onChange={(e) => setPlatformDefault(e.target.value as Platform)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer shadow-2xs truncate"
               >
                 <option value="Airbnb">Airbnb</option>
                 <option value="Booking">Booking.com</option>
@@ -151,60 +155,60 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Costo de Limpieza ($ USD):</label>
+              <label className="block font-semibold mb-1 truncate">Costo Limpieza ($):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={cleaningCost}
                 onChange={(e) => setCleaningCost(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Tarifa por Noche Base ($ USD):</label>
+              <label className="block font-semibold mb-1 truncate">Tarifa / Noche ($):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={nightlyRateDefault}
                 onChange={(e) => setNightlyRateDefault(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] font-bold"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D] font-bold"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
             <div>
-              <label className="block font-semibold mb-1">Habitaciones:</label>
+              <label className="block font-semibold mb-1 truncate">Habitac.:</label>
               <input
                 type="number"
                 value={bedrooms}
                 onChange={(e) => setBedrooms(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 py-1.5 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Baños:</label>
+              <label className="block font-semibold mb-1 truncate">Baños:</label>
               <input
                 type="number"
                 value={bathrooms}
                 onChange={(e) => setBathrooms(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 py-1.5 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Capacidad:</label>
+              <label className="block font-semibold mb-1 truncate">Capacidad:</label>
               <input
                 type="number"
                 value={capacity}
                 onChange={(e) => setCapacity(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 py-1.5 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>

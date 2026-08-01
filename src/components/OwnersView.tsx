@@ -204,50 +204,54 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
             </div>
             
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Nombre Completo:</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                  placeholder="Ej: Alejandro Rialto"
-                />
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Nombre Completo:</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                    placeholder="Ej: Alejandro Rialto"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Correo Electrónico:</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                    placeholder="alejandro@ejemplo.com"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Correo Electrónico:</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                  placeholder="alejandro@ejemplo.com"
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Teléfono:</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                    placeholder="+52 998 123 4567"
+                  />
+                </div>
 
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Teléfono:</label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                  placeholder="+52 998 123 4567"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Comisión de Administración (%):</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={commissionRate}
-                  onChange={(e) => setCommissionRate(Number(e.target.value))}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                />
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Comisión (%):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={commissionRate}
+                    onChange={(e) => setCommissionRate(Number(e.target.value))}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -283,8 +287,8 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
 
       {/* Edit Owner Modal */}
       {editingOwner && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-black/10 shadow-xl">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 border border-black/10 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-black/5 pb-3">
               <h3 className="font-bold text-base text-[#2D2D2D]">Actualizar Propietario</h3>
               <button onClick={() => setEditingOwner(null)} className="p-1 rounded-lg text-black/40 hover:text-black">
@@ -293,47 +297,51 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
             </div>
             
             <form onSubmit={handleUpdate} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Nombre Completo:</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                />
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Nombre Completo:</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Correo Electrónico:</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Correo Electrónico:</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Teléfono:</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                  />
+                </div>
 
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Teléfono:</label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1 text-[#2D2D2D]">Comisión de Administración (%):</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={commissionRate}
-                  onChange={(e) => setCommissionRate(Number(e.target.value))}
-                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-                />
+                <div>
+                  <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Comisión (%):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={commissionRate}
+                    onChange={(e) => setCommissionRate(Number(e.target.value))}
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                  />
+                </div>
               </div>
 
               <div>

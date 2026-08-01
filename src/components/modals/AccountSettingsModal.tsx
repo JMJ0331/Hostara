@@ -448,40 +448,42 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-[#2D2D2D] mb-1">Nueva Contraseña</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type={showNewPass ? 'text' : 'password'}
-                      required
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
-                      className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-9 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPass(!showNewPass)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
-                    >
-                      {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#2D2D2D] mb-1">Nueva Contraseña</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type={showNewPass ? 'text' : 'password'}
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Mínimo 6 caracteres"
+                        className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-9 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPass(!showNewPass)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                      >
+                        {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block font-semibold text-[#2D2D2D] mb-1">Confirmar Nueva Contraseña</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      required
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Repite tu nueva contraseña"
-                      className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
-                    />
+                  <div>
+                    <label className="block font-semibold text-[#2D2D2D] mb-1">Confirmar Nueva Contraseña</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        placeholder="Repite tu nueva contraseña"
+                        className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
+                      />
+                    </div>
                   </div>
                 </div>
 

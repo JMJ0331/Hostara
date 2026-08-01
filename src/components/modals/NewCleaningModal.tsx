@@ -67,69 +67,69 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-semibold mb-1">Propiedad a Limpiar:</label>
-            <select
-              value={propertyId}
-              onChange={(e) => handlePropertyChange(e.target.value)}
-              className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs font-medium text-[#2D2D2D]"
-            >
-              {properties.map((p) => (
-                <option key={p.id} value={p.id}>
-                  🏢 {p.name} ({p.group}) — Costo: ${p.cleaningCost}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Fecha Programada:</label>
+              <label className="block font-semibold mb-1 truncate">Propiedad a Limpiar:</label>
+              <select
+                value={propertyId}
+                onChange={(e) => handlePropertyChange(e.target.value)}
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer shadow-2xs truncate"
+              >
+                {properties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    🏢 {p.name} ({p.group})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 truncate">Fecha Programada:</label>
               <input
                 type="date"
                 required
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold mb-1">Costo de Limpieza ($):</label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={cost}
-                onChange={(e) => setCost(Number(e.target.value))}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1">Personal de Limpieza:</label>
+              <label className="block font-semibold mb-1 truncate">Personal Limpieza:</label>
               <input
                 type="text"
                 required
                 value={assignedCleaner}
                 onChange={(e) => setAssignedCleaner(e.target.value)}
                 placeholder="Ej: Juana Perez"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1">Teléfono WhatsApp:</label>
+              <label className="block font-semibold mb-1 truncate">WhatsApp:</label>
               <input
                 type="text"
                 value={cleanerPhone}
                 onChange={(e) => setCleanerPhone(e.target.value)}
                 placeholder="+52 998 111 2233"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-1">Costo de Limpieza ($ USD):</label>
+            <input
+              type="number"
+              required
+              min="0"
+              value={cost}
+              onChange={(e) => setCost(Number(e.target.value))}
+              className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
+            />
           </div>
 
           <div>

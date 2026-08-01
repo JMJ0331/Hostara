@@ -171,12 +171,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-black/50">Periodo:</span>
+          <div className="flex items-center gap-2 text-xs shrink-0">
+            <span className="text-black/50 hidden sm:inline">Periodo:</span>
             <select
               value={selectedPeriod}
               onChange={(e: any) => setSelectedPeriod(e.target.value)}
-              className="bg-[#FAFAF8] border border-black/10 rounded-lg px-3 py-1 text-xs font-medium text-[#2D2D2D]"
+              className="bg-[#FAFAF8] border border-black/10 rounded-lg px-2.5 py-1 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer truncate max-w-[150px] sm:max-w-none"
             >
               <option value="all">Todas las Reservas</option>
               <option value="active">Solo Reservas Activas</option>
