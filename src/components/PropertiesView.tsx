@@ -85,7 +85,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
             className="btn-primary text-xs shadow-xs"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Añadir Propiedad</span>
+            <span>Añadir Propiedad</span>
           </button>
         </div>
       </div>

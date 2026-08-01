@@ -434,11 +434,11 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3 text-xs">
             {/* Nombre y Apellido side by side */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
               <div>
                 <label className="block font-semibold text-[#2D2D2D] mb-1">Nombre</label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     required
@@ -453,7 +453,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
               <div>
                 <label className="block font-semibold text-[#2D2D2D] mb-1">Apellido</label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     required

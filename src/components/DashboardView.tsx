@@ -90,14 +90,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <p className="text-sm text-gray-500 font-medium mb-1 capitalize">{formattedDate}</p>
           <h1 className="text-3xl font-bold tracking-tight text-[#2D2D2D]">{getGreeting()}, {displayName}</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={onOpenNewResModal}
-            className="bg-[#2D2D2D] text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-black/10 flex items-center gap-2 hover:bg-black/80 transition-all text-xs"
-          >
-            <span>+</span> Nueva Reserva
-          </button>
-        </div>
       </header>
 
       {/* Stats Grid */}

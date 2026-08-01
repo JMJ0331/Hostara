@@ -314,6 +314,19 @@ export default function App() {
     }
   };
 
+  const handleUpdateOwner = async (id: string, ownerData: Partial<Owner>) => {
+    try {
+      await fetch(`/api/owners/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ownerData)
+      });
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error updating owner:', error);
+    }
+  };
+
   const handleDeleteOwner = async (id: string) => {
     try {
       await fetch(`/api/owners/${id}`, { method: 'DELETE' });
@@ -519,6 +532,7 @@ export default function App() {
               properties={properties}
               reservations={reservations}
               onAddOwner={handleAddOwner}
+              onUpdateOwner={handleUpdateOwner}
               onDeleteOwner={requestDeleteOwner}
             />
           )}

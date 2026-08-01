@@ -119,3 +119,13 @@
   background-color: #EFEFEA;
   color: #555550;
 }
+
+/* Universal Form Control Focus Style (Matches Login/Auth View) */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(45, 45, 45, 0.2) !important;
+  border-color: #2D2D2D !important;
+  transition: all 0.15s ease-in-out;
+}

@@ -860,6 +860,36 @@ app.post('/api/owners', (req, res) => {
   res.status(201).json(newOwner);
 });
 
+app.put('/api/owners/:id', (req, res) => {
+  const { id } = req.params;
+  const index = owners.findIndex(o => o.id === id);
+  if (index !== -1) {
+    owners[index] = {
+      ...owners[index],
+      name: req.body.name ?? owners[index].name,
+      email: req.body.email ?? owners[index].email,
+      phone: req.body.phone ?? owners[index].phone,
+      commissionRate: req.body.commissionRate !== undefined ? Number(req.body.commissionRate) : owners[index].commissionRate,
+      payoutMethod: req.body.payoutMethod ?? owners[index].payoutMethod,
+      accountNumber: req.body.accountNumber ?? owners[index].accountNumber
+    };
+    
+    // Propagate updated owner details to properties
+    if (req.body.name) {
+      properties.forEach(p => {
+        if (p.ownerId === id) {
+          p.ownerName = req.body.name;
+          if (req.body.email) p.ownerEmail = req.body.email;
+          if (req.body.phone) p.ownerPhone = req.body.phone;
+        }
+      });
+    }
+
+    return res.json(owners[index]);
+  }
+  return res.status(404).json({ error: 'Propietario no encontrado' });
+});
+
 app.delete('/api/owners/:id', (req, res) => {
   const { id } = req.params;
   owners = owners.filter(o => o.id !== id);

@@ -95,7 +95,7 @@ Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
           className="btn-primary text-xs shadow-xs"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Programar Limpieza</span>
+          <span>Programar Limpieza</span>
         </button>
       </div>
 

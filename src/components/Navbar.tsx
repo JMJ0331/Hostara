@@ -82,25 +82,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </div>
           </div>
-
-          <div className="h-5 w-[1px] bg-black/10 hidden xl:block" />
-
-          {/* Group Filter Dropdown */}
-          <div className="relative hidden xl:block">
-            <select
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="appearance-none bg-white border border-black/5 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D] shadow-xs cursor-pointer"
-            >
-              <option value="ALL">Todos los Complejos</option>
-              {groups.map((group) => (
-                <option key={group} value={group}>
-                  🏢 {group}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-black/40 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
         </div>
 
         {/* Center Search Bar */}
@@ -136,8 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="bg-[#2D2D2D] text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium shadow-md shadow-black/10 flex items-center gap-1.5 hover:bg-black/80 text-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nueva Reserva</span>
-              <span className="sm:hidden">+ Nueva</span>
+              <span>Agregar</span>
               <ChevronDown className="w-3 h-3 opacity-70" />
             </button>
 
