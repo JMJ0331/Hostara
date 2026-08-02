@@ -699,25 +699,20 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                 {(calMobileMode === 'grid' || true) && (
                   <div className={calMobileMode === 'agenda' ? 'hidden sm:block' : 'block'}>
                     
-                    {/* Swipe Hint on Mobile */}
-                    <div className="sm:hidden text-[10px] text-black/40 flex items-center justify-end gap-1 mb-1 font-medium">
-                      <span>↔ Desliza para ver todo el mes</span>
-                    </div>
-
-                    {/* Scroll Container for Mobile */}
-                    <div className="overflow-x-auto pb-2 -mx-1 px-1 touch-pan-x">
-                      <div className="min-w-[640px] sm:min-w-0 grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs">
+                    {/* Full Width Grid Container without horizontal scroll traps */}
+                    <div className="w-full">
+                      <div className="w-full grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs">
                         
                         {/* Day Names Header */}
                         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-                          <div key={day} className="font-bold text-black/50 py-1 uppercase text-[10px] bg-[#FAFAF8] rounded-md border border-black/5">
+                          <div key={day} className="font-bold text-black/50 py-1 uppercase text-[9px] sm:text-[10px] bg-[#FAFAF8] rounded-md border border-black/5 truncate">
                             {day}
                           </div>
                         ))}
 
                         {/* Empty Offset Cells */}
                         {Array.from({ length: monthFirstDayOffset }).map((_, idx) => (
-                          <div key={`offset-${idx}`} className="min-h-[75px] sm:min-h-[90px] bg-black/[0.02] rounded-xl border border-dashed border-black/5" />
+                          <div key={`offset-${idx}`} className="min-h-[54px] sm:min-h-[90px] bg-black/[0.02] rounded-lg sm:rounded-xl border border-dashed border-black/5" />
                         ))}
 
                         {/* Calendar Days */}
@@ -734,22 +729,22 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                             <div 
                               key={day} 
                               onClick={() => setSelectedDayNum(day)}
-                              className={`min-h-[75px] sm:min-h-[90px] p-1.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative ${
+                              className={`min-h-[54px] sm:min-h-[90px] p-1 sm:p-1.5 rounded-lg sm:rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative overflow-hidden ${
                                 isSelected
-                                  ? 'ring-2 ring-[#2D2D2D] bg-white border-transparent shadow-sm'
+                                  ? 'ring-2 ring-[#2D2D2D] bg-white border-transparent shadow-xs'
                                   : dayReservations.length > 0 
                                   ? 'bg-white border-black/15 shadow-2xs hover:border-black/30' 
                                   : 'bg-[#FAFAF8] border-black/5 hover:bg-white'
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-[11px] text-[#2D2D2D]">{day}</span>
+                                <span className="font-bold text-[10px] sm:text-[11px] text-[#2D2D2D]">{day}</span>
                                 {dayReservations.length > 0 && (
                                   <span className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]"></span>
                                 )}
                               </div>
                               
-                              <div className="space-y-1 my-1">
+                              <div className="space-y-0.5 sm:space-y-1 my-0.5 sm:my-1">
                                 {dayReservations.map((res) => {
                                   const isCheckIn = formattedDay === res.checkIn;
                                   const isCheckOut = formattedDay === res.checkOut;
@@ -762,7 +757,7 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                                         e.stopPropagation();
                                         setSmallModalRes(res);
                                       }}
-                                      className={`py-1 px-1.5 text-[10px] font-semibold cursor-pointer hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs border border-white/10 bg-[#1E1E1E] text-white ${
+                                      className={`py-0.5 px-1 sm:py-1 sm:px-1.5 text-[8px] sm:text-[10px] font-semibold cursor-pointer hover:bg-black transition-colors flex items-center gap-1 sm:gap-1.5 shadow-xs border border-white/10 bg-[#1E1E1E] text-white overflow-hidden ${
                                         isCheckIn && isCheckOut
                                           ? 'rounded-full'
                                           : isCheckIn
@@ -774,11 +769,11 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                                       title={`${res.guestName} (${res.checkIn} a ${res.checkOut})`}
                                     >
                                       {(isCheckIn || isRowStart || dayReservations.length === 1) && (
-                                        <div className="w-4 h-4 rounded-full bg-[#383838] border border-white/30 flex items-center justify-center font-bold text-[9px] text-white shrink-0 shadow-2xs">
+                                        <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#383838] border border-white/30 flex items-center justify-center font-bold text-[8px] sm:text-[9px] text-white shrink-0 shadow-2xs">
                                           {res.guestName ? res.guestName.charAt(0).toUpperCase() : 'H'}
                                         </div>
                                       )}
-                                      <span className="font-semibold text-[10px] text-white truncate tracking-tight">
+                                      <span className="font-semibold text-[8px] sm:text-[10px] text-white truncate tracking-tight min-w-0">
                                         {res.guestName}
                                       </span>
                                     </div>
