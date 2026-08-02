@@ -102,25 +102,25 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Check-in:</label>
               <input
                 type="date"
                 required
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full min-w-0 max-w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-1.5 sm:px-3 py-2 text-xs text-[#2D2D2D] appearance-none box-border"
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Check-out:</label>
               <input
                 type="date"
                 required
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full min-w-0 max-w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-1.5 sm:px-3 py-2 text-xs text-[#2D2D2D] appearance-none box-border"
               />
             </div>
           </div>

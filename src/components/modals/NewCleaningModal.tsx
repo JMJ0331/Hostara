@@ -68,7 +68,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Propiedad a Limpiar:</label>
               <select
                 value={propertyId}
@@ -83,20 +83,20 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
               </select>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Fecha Programada:</label>
               <input
                 type="date"
                 required
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                className="w-full min-w-0 max-w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-1.5 sm:px-3 py-2 text-xs text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all appearance-none box-border"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Personal Limpieza:</label>
               <input
                 type="text"
@@ -108,7 +108,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">WhatsApp:</label>
               <input
                 type="text"

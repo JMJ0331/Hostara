@@ -183,7 +183,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-3xl w-full border border-black/10 shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+      <div className="bg-white rounded-2xl max-w-3xl w-full border border-black/10 shadow-2xl overflow-hidden flex flex-col h-[580px] max-h-[90vh]">
         
         {/* Header */}
         <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-black/10 flex items-center justify-between bg-[#FAFAF8] shrink-0">
