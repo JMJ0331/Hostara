@@ -17,7 +17,9 @@ import {
   ChevronRight,
   Sparkles,
   TrendingUp,
-  Building2
+  Building2,
+  User,
+  X
 } from 'lucide-react';
 import type { Reservation, Platform, ReservationStatus } from '../types';
 
@@ -47,8 +49,14 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
   // Week view reference date (defaults to Monday July 27, 2026)
   const [weekRefDate, setWeekRefDate] = useState<Date>(new Date(2026, 6, 27));
 
+  // Month view reference date (defaults to current month/year)
+  const [monthRefDate, setMonthRefDate] = useState<Date>(new Date());
+
   // Year view state
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+
+  // Small popover/modal state when clicking a reservation pill
+  const [smallModalRes, setSmallModalRes] = useState<Reservation | null>(null);
 
   // Helper to calculate Monday of a given week
   const getMondayOf = (d: Date) => {
@@ -531,19 +539,19 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                   return (
                     <div 
                       key={formattedDay}
-                      className="p-3 bg-[#FAFAF8] rounded-xl border border-black/10 flex flex-col justify-between space-y-2"
+                      className="p-3 bg-[#FAFAF8] rounded-2xl border border-black/10 flex flex-col justify-between space-y-2.5"
                     >
                       <div className="flex items-center justify-between border-b border-black/5 pb-1.5">
                         <div>
                           <span className="font-bold text-xs text-[#2D2D2D] block">
                             {spanishDayNames[index]}
                           </span>
-                          <span className="text-[10px] text-black/50">
+                          <span className="text-[10px] text-black/50 font-medium">
                             {d.getDate()} {spanishMonthShort[d.getMonth()]}
                           </span>
                         </div>
-                        <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                          {dayReservations.length} res.
+                        <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                          {dayReservations.length} {dayReservations.length === 1 ? 'res.' : 'res.'}
                         </span>
                       </div>
 
@@ -554,17 +562,23 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                           dayReservations.map((res) => (
                             <div
                               key={res.id}
-                              onClick={() => onSelectReservation(res)}
-                              className="p-2 rounded-lg bg-white border border-black/10 shadow-2xs hover:border-black/30 transition-all cursor-pointer space-y-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSmallModalRes(res);
+                              }}
+                              className="bg-[#1E1E1E] text-white rounded-full p-2 px-3 shadow-md hover:bg-black transition-all cursor-pointer flex items-center justify-between gap-2 border border-white/10 group"
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-xs text-[#2D2D2D] truncate">{res.guestName}</span>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-5 h-5 rounded-full bg-[#383838] border border-white/30 flex items-center justify-center font-bold text-[10px] text-white shrink-0 shadow-2xs">
+                                  {res.guestName ? res.guestName.charAt(0).toUpperCase() : 'H'}
+                                </div>
+                                <span className="font-semibold text-xs text-white truncate tracking-tight">
+                                  {res.guestName}
+                                </span>
                               </div>
-                              <p className="text-[10px] text-black/50 truncate">{res.propertyName}</p>
-                              <div className="flex items-center justify-between pt-1">
-                                {getPlatformBadge(res.platform)}
-                                <span className="font-mono text-[10px] font-bold text-[#2D2D2D]">${res.totalPaid}</span>
-                              </div>
+                              <span className="text-[10px] text-white/60 font-mono font-medium shrink-0 group-hover:text-white transition-colors">
+                                {res.platform}
+                              </span>
                             </div>
                           ))
                         )}
@@ -577,134 +591,100 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
           )}
 
           {/* 2. MONTH VIEW */}
-          {timeFrame === 'month' && (
-            <div className="space-y-4">
-              
-              {/* Agenda View for Mobile */}
-              {calMobileMode === 'agenda' && (
-                <div className="block sm:hidden space-y-3">
-                  <p className="text-[11px] text-black/50 font-medium">
-                    Días con ocupación y reservas activas en Julio 2026:
-                  </p>
-                  <div className="space-y-2.5">
-                    {daysInMonth.map((day) => {
-                      const formattedDay = `2026-07-${String(day).padStart(2, '0')}`;
-                      const dayReservations = filteredReservations.filter(
-                        (r) => r.checkIn <= formattedDay && r.checkOut >= formattedDay
-                      );
+          {timeFrame === 'month' && (() => {
+            const currentMonthYear = monthRefDate.getFullYear();
+            const currentMonthIdx = monthRefDate.getMonth();
+            const daysInCurrentMonthCount = getDaysInMonth(currentMonthYear, currentMonthIdx);
+            const daysInMonthList = Array.from({ length: daysInCurrentMonthCount }, (_, i) => i + 1);
+            const firstDayOfMonthObj = new Date(currentMonthYear, currentMonthIdx, 1);
+            const monthFirstDayOffset = firstDayOfMonthObj.getDay();
 
-                      if (dayReservations.length === 0) return null;
+            return (
+              <div className="space-y-4">
+                
+                {/* Month Navigation Header */}
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-[#FAFAF8] p-3 rounded-xl border border-black/5 text-xs gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const prev = new Date(currentMonthYear, currentMonthIdx - 1, 1);
+                        setMonthRefDate(prev);
+                      }}
+                      className="p-1.5 rounded-lg bg-white border border-black/10 hover:bg-black/5 cursor-pointer transition-colors"
+                      title="Mes anterior"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-[#2D2D2D]" />
+                    </button>
 
-                      return (
-                        <div 
-                          key={day}
-                          className="p-3 bg-[#FAFAF8] rounded-xl border border-black/5 space-y-2"
-                        >
-                          <div className="flex items-center justify-between text-xs border-b border-black/5 pb-1.5">
-                            <span className="font-bold text-[#2D2D2D]">
-                              📅 Día {day} de Julio
-                            </span>
-                            <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
-                              {dayReservations.length} {dayReservations.length === 1 ? 'reserva' : 'reservas'}
-                            </span>
-                          </div>
+                    <span className="font-bold text-[#2D2D2D] text-xs sm:text-sm">
+                      {spanishMonthNames[currentMonthIdx]} {currentMonthYear}
+                    </span>
 
-                          <div className="space-y-1.5 pt-0.5">
-                            {dayReservations.map((res) => (
-                              <div
-                                key={res.id}
-                                onClick={() => onSelectReservation(res)}
-                                className="p-2 rounded-lg bg-white border border-black/10 flex items-center justify-between cursor-pointer hover:border-black/30 transition-all text-xs"
-                              >
-                                <div>
-                                  <p className="font-bold text-[#2D2D2D]">{res.guestName}</p>
-                                  <p className="text-[10px] text-black/50">{res.propertyName}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {getPlatformBadge(res.platform)}
-                                  <span className="font-mono text-[10px] font-bold text-[#2D2D2D]">
-                                    ${res.totalPaid}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    <button
+                      onClick={() => {
+                        const next = new Date(currentMonthYear, currentMonthIdx + 1, 1);
+                        setMonthRefDate(next);
+                      }}
+                      className="p-1.5 rounded-lg bg-white border border-black/10 hover:bg-black/5 cursor-pointer transition-colors"
+                      title="Mes siguiente"
+                    >
+                      <ChevronRight className="w-4 h-4 text-[#2D2D2D]" />
+                    </button>
                   </div>
+
+                  <button
+                    onClick={() => setMonthRefDate(new Date())}
+                    className="btn-secondary text-[11px] py-1 px-3 cursor-pointer"
+                  >
+                    Ver Mes Actual
+                  </button>
                 </div>
-              )}
 
-              {/* Grid View */}
-              {(calMobileMode === 'grid' || true) && (
-                <div className={calMobileMode === 'agenda' ? 'hidden sm:block' : 'block'}>
-                  
-                  {/* Swipe Hint on Mobile */}
-                  <div className="sm:hidden text-[10px] text-black/40 flex items-center justify-end gap-1 mb-1 font-medium">
-                    <span>↔ Desliza para ver todo el mes</span>
-                  </div>
-
-                  {/* Scroll Container for Mobile */}
-                  <div className="overflow-x-auto pb-2 -mx-1 px-1 touch-pan-x">
-                    <div className="min-w-[620px] sm:min-w-0 grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs">
-                      
-                      {/* Day Names Header */}
-                      {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-                        <div key={day} className="font-bold text-black/50 py-1 uppercase text-[10px] bg-[#FAFAF8] rounded-md border border-black/5">
-                          {day}
-                        </div>
-                      ))}
-
-                      {/* Empty Offset Cells */}
-                      {Array.from({ length: firstDayOffset }).map((_, idx) => (
-                        <div key={`offset-${idx}`} className="min-h-[70px] sm:min-h-[85px] bg-black/[0.02] rounded-xl border border-dashed border-black/5" />
-                      ))}
-
-                      {/* Calendar Days */}
-                      {daysInMonth.map((day) => {
-                        const formattedDay = `2026-07-${String(day).padStart(2, '0')}`;
+                {/* Agenda View for Mobile */}
+                {calMobileMode === 'agenda' && (
+                  <div className="block sm:hidden space-y-3">
+                    <p className="text-[11px] text-black/50 font-medium">
+                      Días con ocupación en {spanishMonthNames[currentMonthIdx]} {currentMonthYear}:
+                    </p>
+                    <div className="space-y-2.5">
+                      {daysInMonthList.map((day) => {
+                        const formattedDay = `${currentMonthYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                         const dayReservations = filteredReservations.filter(
                           (r) => r.checkIn <= formattedDay && r.checkOut >= formattedDay
                         );
-                        const isSelected = selectedDayNum === day;
+
+                        if (dayReservations.length === 0) return null;
 
                         return (
                           <div 
-                            key={day} 
-                            onClick={() => setSelectedDayNum(day)}
-                            className={`min-h-[72px] sm:min-h-[85px] p-1.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                              isSelected
-                                ? 'ring-2 ring-[#2D2D2D] bg-white border-transparent shadow-sm'
-                                : dayReservations.length > 0 
-                                ? 'bg-white border-black/15 shadow-2xs hover:border-black/30' 
-                                : 'bg-[#FAFAF8] border-black/5 hover:bg-white'
-                            }`}
+                            key={day}
+                            className="p-3 bg-[#FAFAF8] rounded-xl border border-black/5 space-y-2"
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-[11px] text-[#2D2D2D]">{day}</span>
-                              {dayReservations.length > 0 && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
-                              )}
+                            <div className="flex items-center justify-between text-xs border-b border-black/5 pb-1.5">
+                              <span className="font-bold text-[#2D2D2D]">
+                                📅 Día {day} de {spanishMonthNames[currentMonthIdx]}
+                              </span>
+                              <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                                {dayReservations.length} {dayReservations.length === 1 ? 'reserva' : 'reservas'}
+                              </span>
                             </div>
-                            
-                            <div className="space-y-1 my-1">
+
+                            <div className="space-y-1.5 pt-0.5">
                               {dayReservations.map((res) => (
                                 <div
                                   key={res.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onSelectReservation(res);
-                                  }}
-                                  className={`p-1 rounded text-[9px] font-semibold truncate cursor-pointer hover:opacity-90 leading-tight ${
-                                    res.platform === 'Airbnb' ? 'bg-rose-100 text-rose-900 border border-rose-200' :
-                                    res.platform === 'Booking' ? 'bg-blue-100 text-blue-900 border border-blue-200' :
-                                    'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                                  }`}
-                                  title={`${res.guestName} - ${res.propertyName}`}
+                                  onClick={() => setSmallModalRes(res)}
+                                  className="bg-[#1E1E1E] text-white p-2.5 px-3 rounded-full flex items-center justify-between cursor-pointer hover:bg-black transition-all shadow-md border border-white/10"
                                 >
-                                  <span className="font-bold">{res.guestName.split(' ')[0]}</span>
-                                  <span className="hidden md:inline text-[8px] opacity-75 ml-0.5">({res.propertyName.substring(0, 6)})</span>
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="w-6 h-6 rounded-full bg-[#383838] border border-white/30 flex items-center justify-center font-bold text-[10px] text-white shrink-0">
+                                      {res.guestName ? res.guestName.charAt(0).toUpperCase() : 'H'}
+                                    </div>
+                                    <p className="font-bold text-xs text-white truncate">{res.guestName}</p>
+                                  </div>
+                                  <span className="text-[10px] text-white/70 font-medium px-2 py-0.5 rounded-full bg-white/10 border border-white/10">
+                                    {res.platform}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -713,36 +693,134 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                       })}
                     </div>
                   </div>
+                )}
 
-                  {/* Selected Day Quick Inspector Panel */}
-                  {selectedDayNum !== null && (
-                    <div className="mt-4 p-3.5 bg-[#FAFAF8] border border-black/10 rounded-2xl animate-fade-in flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold shrink-0">
-                          {selectedDayNum}
-                        </div>
-                        <div>
-                          <p className="font-bold text-[#2D2D2D]">Detalles del {selectedDayNum} de Julio 2026</p>
-                          <p className="text-[11px] text-black/50">
-                            {filteredReservations.filter(r => r.checkIn <= `2026-07-${String(selectedDayNum).padStart(2, '0')}` && r.checkOut >= `2026-07-${String(selectedDayNum).padStart(2, '0')}`).length} reservas encontradas para esta fecha.
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setSelectedDayNum(null)}
-                        className="text-[11px] font-bold text-black/50 hover:text-black self-end sm:self-auto cursor-pointer"
-                      >
-                        Cerrar detalle
-                      </button>
+                {/* Grid View */}
+                {(calMobileMode === 'grid' || true) && (
+                  <div className={calMobileMode === 'agenda' ? 'hidden sm:block' : 'block'}>
+                    
+                    {/* Swipe Hint on Mobile */}
+                    <div className="sm:hidden text-[10px] text-black/40 flex items-center justify-end gap-1 mb-1 font-medium">
+                      <span>↔ Desliza para ver todo el mes</span>
                     </div>
-                  )}
 
-                </div>
-              )}
+                    {/* Scroll Container for Mobile */}
+                    <div className="overflow-x-auto pb-2 -mx-1 px-1 touch-pan-x">
+                      <div className="min-w-[640px] sm:min-w-0 grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs">
+                        
+                        {/* Day Names Header */}
+                        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+                          <div key={day} className="font-bold text-black/50 py-1 uppercase text-[10px] bg-[#FAFAF8] rounded-md border border-black/5">
+                            {day}
+                          </div>
+                        ))}
 
-            </div>
-          )}
+                        {/* Empty Offset Cells */}
+                        {Array.from({ length: monthFirstDayOffset }).map((_, idx) => (
+                          <div key={`offset-${idx}`} className="min-h-[75px] sm:min-h-[90px] bg-black/[0.02] rounded-xl border border-dashed border-black/5" />
+                        ))}
+
+                        {/* Calendar Days */}
+                        {daysInMonthList.map((day) => {
+                          const formattedDay = `${currentMonthYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const dayOfWeek = new Date(currentMonthYear, currentMonthIdx, day).getDay();
+                          
+                          const dayReservations = filteredReservations.filter(
+                            (r) => r.checkIn <= formattedDay && r.checkOut >= formattedDay
+                          );
+                          const isSelected = selectedDayNum === day;
+
+                          return (
+                            <div 
+                              key={day} 
+                              onClick={() => setSelectedDayNum(day)}
+                              className={`min-h-[75px] sm:min-h-[90px] p-1.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative ${
+                                isSelected
+                                  ? 'ring-2 ring-[#2D2D2D] bg-white border-transparent shadow-sm'
+                                  : dayReservations.length > 0 
+                                  ? 'bg-white border-black/15 shadow-2xs hover:border-black/30' 
+                                  : 'bg-[#FAFAF8] border-black/5 hover:bg-white'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-[11px] text-[#2D2D2D]">{day}</span>
+                                {dayReservations.length > 0 && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]"></span>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-1 my-1">
+                                {dayReservations.map((res) => {
+                                  const isCheckIn = formattedDay === res.checkIn;
+                                  const isCheckOut = formattedDay === res.checkOut;
+                                  const isRowStart = dayOfWeek === 0;
+
+                                  return (
+                                    <div
+                                      key={res.id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSmallModalRes(res);
+                                      }}
+                                      className={`py-1 px-1.5 text-[10px] font-semibold cursor-pointer hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs border border-white/10 bg-[#1E1E1E] text-white ${
+                                        isCheckIn && isCheckOut
+                                          ? 'rounded-full'
+                                          : isCheckIn
+                                          ? 'rounded-l-full rounded-r-xs'
+                                          : isCheckOut
+                                          ? 'rounded-r-full rounded-l-xs'
+                                          : 'rounded-xs'
+                                      }`}
+                                      title={`${res.guestName} (${res.checkIn} a ${res.checkOut})`}
+                                    >
+                                      {(isCheckIn || isRowStart || dayReservations.length === 1) && (
+                                        <div className="w-4 h-4 rounded-full bg-[#383838] border border-white/30 flex items-center justify-center font-bold text-[9px] text-white shrink-0 shadow-2xs">
+                                          {res.guestName ? res.guestName.charAt(0).toUpperCase() : 'H'}
+                                        </div>
+                                      )}
+                                      <span className="font-semibold text-[10px] text-white truncate tracking-tight">
+                                        {res.guestName}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Selected Day Quick Inspector Panel */}
+                    {selectedDayNum !== null && (
+                      <div className="mt-4 p-3.5 bg-[#FAFAF8] border border-black/10 rounded-2xl animate-fade-in flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold shrink-0">
+                            {selectedDayNum}
+                          </div>
+                          <div>
+                            <p className="font-bold text-[#2D2D2D]">Detalles del {selectedDayNum} de {spanishMonthNames[currentMonthIdx]} {currentMonthYear}</p>
+                            <p className="text-[11px] text-black/50">
+                              {filteredReservations.filter(r => r.checkIn <= `${currentMonthYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-${String(selectedDayNum).padStart(2, '0')}` && r.checkOut >= `${currentMonthYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-${String(selectedDayNum).padStart(2, '0')}`).length} reservas encontradas para esta fecha.
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedDayNum(null)}
+                          className="text-[11px] font-bold text-black/50 hover:text-black self-end sm:self-auto cursor-pointer"
+                        >
+                          Cerrar detalle
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+
+              </div>
+            );
+          })()}
 
           {/* 3. YEAR VIEW */}
           {timeFrame === 'year' && (
@@ -830,6 +908,94 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Small Airbnb-style Reservation Details Modal (Light Mode) */}
+      {smallModalRes && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+          onClick={() => setSmallModalRes(null)}
+        >
+          <div 
+            className="bg-white text-[#2D2D2D] rounded-2xl max-w-sm w-full p-4 sm:p-5 border border-black/10 shadow-2xl space-y-3.5 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-black/10">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center font-bold text-sm text-purple-800 shrink-0 shadow-xs">
+                  {smallModalRes.guestName ? smallModalRes.guestName.charAt(0).toUpperCase() : 'H'}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base text-[#2D2D2D] truncate leading-tight">
+                    {smallModalRes.guestName}
+                  </h3>
+                  <p className="text-[10px] sm:text-[11px] text-black/50 font-medium truncate">
+                    Huésped {smallModalRes.createdVia === 'ical' ? 'vía iCal' : 'Manual'} ({smallModalRes.platform})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSmallModalRes(null)}
+                className="p-1.5 rounded-full text-black/40 hover:text-black hover:bg-black/5 transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFAF8] border border-black/10">
+                <span className="text-black/60 font-medium">Propiedad:</span>
+                <span className="font-semibold text-[#2D2D2D] truncate max-w-[180px]">{smallModalRes.propertyName}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAFAF8] border border-black/10">
+                <span className="text-black/60 font-medium">Fechas:</span>
+                <span className="font-bold text-[#2D2D2D] font-mono">
+                  {smallModalRes.checkIn} → {smallModalRes.checkOut}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-xl bg-[#FAFAF8] border border-black/10">
+                  <span className="text-[10px] text-black/50 uppercase font-bold block">Total Reserva</span>
+                  <span className="font-bold text-emerald-700 text-sm">${smallModalRes.totalPaid ? smallModalRes.totalPaid.toLocaleString() : '0'}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#FAFAF8] border border-black/10">
+                  <span className="text-[10px] text-black/50 uppercase font-bold block">Plataforma</span>
+                  <span className="font-semibold text-[#2D2D2D]">{smallModalRes.platform}</span>
+                </div>
+              </div>
+
+              {smallModalRes.externalId && (
+                <div className="text-[10px] text-black/40 font-mono truncate pt-0.5">
+                  UID iCal: {smallModalRes.externalId}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
+              <button
+                onClick={() => setSmallModalRes(null)}
+                className="btn-secondary text-xs py-1.5 px-3"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={() => {
+                  const r = smallModalRes;
+                  setSmallModalRes(null);
+                  onSelectReservation(r);
+                }}
+                className="btn-primary text-xs py-1.5 px-4"
+              >
+                Editar Reserva
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

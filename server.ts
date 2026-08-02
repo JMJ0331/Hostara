@@ -763,7 +763,7 @@ app.post('/api/ical/sync', async (req, res) => {
         const dOut = new Date(event.checkOut);
         const diffDays = Math.max(1, Math.round((dOut.getTime() - dIn.getTime()) / (1000 * 3600 * 24)));
         const nightlyRate = prop.nightlyRateDefault || 120;
-        const totalPaid = diffDays * nightlyRate;
+        const totalPaid = (event.price && event.price > 0) ? event.price : (diffDays * nightlyRate);
 
         const newRes: Reservation = {
           id: `res-ical-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
@@ -896,7 +896,7 @@ app.post('/api/ical/sync-all', async (req, res) => {
         const dOut = new Date(event.checkOut);
         const diffDays = Math.max(1, Math.round((dOut.getTime() - dIn.getTime()) / (1000 * 3600 * 24)));
         const nightlyRate = prop.nightlyRateDefault || 120;
-        const totalPaid = diffDays * nightlyRate;
+        const totalPaid = (event.price && event.price > 0) ? event.price : (diffDays * nightlyRate);
 
         const newRes: Reservation = {
           id: `res-ical-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,

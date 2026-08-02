@@ -8,6 +8,7 @@ export interface ParsedICalEvent {
   checkOut: string; // YYYY-MM-DD
   platform: Platform;
   description?: string;
+  price?: number;
 }
 
 /**
@@ -105,6 +106,23 @@ export function parseICalString(icsContent: string): ParsedICalEvent[] {
         const checkOut = parseICalDate(dtEndRaw);
         const { guestName, platform } = parseGuestAndPlatform(summary, description);
 
+        // Extract real reservation total price if present in iCal properties or description
+        let price: number | undefined;
+        const pKey = currentEvent['PRICE'] || currentEvent['X-PRICE'] || currentEvent['X-TOTAL-PRICE'] || currentEvent['TOTAL-PRICE'];
+        if (pKey) {
+          const num = parseFloat(pKey.replace(/[^0-9.]/g, ''));
+          if (!isNaN(num) && num > 0) price = num;
+        }
+
+        if (!price) {
+          const textToSearch = `${summary} ${description}`;
+          const priceMatch = textToSearch.match(/(?:price|total|precio|monto|valor|costo|payout|usd|\$)\s*:?\s*\$?(\d+(?:\.\d+)?)/i);
+          if (priceMatch) {
+            const num = parseFloat(priceMatch[1]);
+            if (!isNaN(num) && num > 0) price = num;
+          }
+        }
+
         events.push({
           uid,
           summary,
@@ -112,7 +130,8 @@ export function parseICalString(icsContent: string): ParsedICalEvent[] {
           checkIn,
           checkOut,
           platform,
-          description
+          description,
+          price
         });
       }
       inEvent = false;
@@ -178,7 +197,8 @@ DTSTAMP:${formatDate(now)}
 DTSTART;VALUE=DATE:${parseICalDate(formatDate(d1In))}
 DTEND;VALUE=DATE:${parseICalDate(formatDate(d1Out))}
 SUMMARY:Airbnb (HM-89214) - Sophia Martinez
-DESCRIPTION:Reserva iCal activa en curso (${platform}).
+DESCRIPTION:Reserva iCal activa en curso (${platform}). Total: $520 USD
+PRICE:520
 END:VEVENT
 BEGIN:VEVENT
 UID:airbnb-res-${propClean}-102
@@ -186,7 +206,8 @@ DTSTAMP:${formatDate(now)}
 DTSTART;VALUE=DATE:${parseICalDate(formatDate(d2In))}
 DTEND;VALUE=DATE:${parseICalDate(formatDate(d2Out))}
 SUMMARY:Airbnb (HM-99302) - Carlos Mendoza
-DESCRIPTION:Llegada el día de hoy. Reserva de 4 noches.
+DESCRIPTION:Llegada el día de hoy. Reserva de 4 noches. Total: $560 USD
+PRICE:560
 END:VEVENT
 BEGIN:VEVENT
 UID:booking-res-${propClean}-103
@@ -194,7 +215,8 @@ DTSTAMP:${formatDate(now)}
 DTSTART;VALUE=DATE:${parseICalDate(formatDate(d3In))}
 DTEND;VALUE=DATE:${parseICalDate(formatDate(d3Out))}
 SUMMARY:Booking.com - Laura Hernandez
-DESCRIPTION:Reserva confirmada de 4 noches.
+DESCRIPTION:Reserva confirmada de 4 noches. Total: $640 USD
+PRICE:640
 END:VEVENT
 BEGIN:VEVENT
 UID:airbnb-res-${propClean}-104
@@ -202,7 +224,8 @@ DTSTAMP:${formatDate(now)}
 DTSTART;VALUE=DATE:${parseICalDate(formatDate(d4In))}
 DTEND;VALUE=DATE:${parseICalDate(formatDate(d4Out))}
 SUMMARY:Airbnb (HM-10492) - Alejandro Torres
-DESCRIPTION:Reserva confirmada mes actual.
+DESCRIPTION:Reserva confirmada mes actual. Total: $480 USD
+PRICE:480
 END:VEVENT
 BEGIN:VEVENT
 UID:vrbo-res-${propClean}-105
@@ -210,7 +233,8 @@ DTSTAMP:${formatDate(now)}
 DTSTART;VALUE=DATE:${parseICalDate(formatDate(d5In))}
 DTEND;VALUE=DATE:${parseICalDate(formatDate(d5Out))}
 SUMMARY:Vrbo - Beatriz Ramirez
-DESCRIPTION:Reserva programada para el próximo mes.
+DESCRIPTION:Reserva programada para el próximo mes. Total: $750 USD
+PRICE:750
 END:VEVENT
 END:VCALENDAR`;
 }
