@@ -38,6 +38,15 @@ export const ICalSyncModal: React.FC<ICalSyncModalProps> = ({
   const [syncResult, setSyncResult] = useState<any>(null);
   const [copiedPropId, setCopiedPropId] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    const selectedProp = properties.find(p => p.id === selectedPropId);
+    if (selectedProp?.icalUrl) {
+      setCustomUrl(selectedProp.icalUrl);
+    } else {
+      setCustomUrl('');
+    }
+  }, [selectedPropId, properties]);
+
   if (!isOpen) return null;
 
   const handleSyncSelected = async () => {

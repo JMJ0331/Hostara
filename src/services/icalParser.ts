@@ -141,39 +141,76 @@ export function parseICalString(icsContent: string): ParsedICalEvent[] {
  */
 export function generateSampleICalFeed(propertyName: string, platform: Platform = 'Airbnb'): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = now.getDate();
-
-  const d1 = new Date(now); d1.setDate(d1.getDate() - 3);
-  const d1End = new Date(now); // Check-out today!
-  
-  const d2 = new Date(now); d2.setDate(d2.getDate() + 2);
-  const d2End = new Date(now); d2End.setDate(d2End.getDate() + 5);
+  const sanitize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const propClean = sanitize(propertyName);
 
   const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
+  // 1. Active reservation (Check-in 2 days ago, Check-out in 2 days) - Current day & month
+  const d1In = new Date(now); d1In.setDate(d1In.getDate() - 2);
+  const d1Out = new Date(now); d1Out.setDate(d1Out.getDate() + 2);
+
+  // 2. Starts TODAY (Check-in today, Check-out in 4 days) - Current day & month
+  const d2In = new Date(now);
+  const d2Out = new Date(now); d2Out.setDate(d2Out.getDate() + 4);
+
+  // 3. Mid current month (Check-in in 6 days, Check-out in 10 days)
+  const d3In = new Date(now); d3In.setDate(d3In.getDate() + 6);
+  const d3Out = new Date(now); d3Out.setDate(d3Out.getDate() + 10);
+
+  // 4. Late current month (Check-in in 14 days, Check-out in 18 days)
+  const d4In = new Date(now); d4In.setDate(d4In.getDate() + 14);
+  const d4Out = new Date(now); d4Out.setDate(d4Out.getDate() + 18);
+
+  // 5. Future month reservation (Check-in in 35 days, Check-out in 40 days)
+  const d5In = new Date(now); d5In.setDate(d5In.getDate() + 35);
+  const d5Out = new Date(now); d5Out.setDate(d5Out.getDate() + 40);
+
   return `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//RentasMaster//iCal Generator 1.0//ES
+PRODID:-//Hostara//iCal Engine 2.0//ES
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Feed iCal ${propertyName} (${platform})
 BEGIN:VEVENT
-UID:airbnb-reservation-${propertyName.toLowerCase().replace(/[^a-z0-9]/g, '')}-101
+UID:airbnb-res-${propClean}-101
 DTSTAMP:${formatDate(now)}
-DTSTART;VALUE=DATE:${parseICalDate(formatDate(d1))}
-DTEND;VALUE=DATE:${parseICalDate(formatDate(d1End))}
-SUMMARY:${platform === 'Airbnb' ? 'Airbnb (HM982341) - Sophia Martinez' : 'Booking.com - Sophia Martinez'}
-DESCRIPTION:Reserva confirmada via ${platform}. 2 adultos.
+DTSTART;VALUE=DATE:${parseICalDate(formatDate(d1In))}
+DTEND;VALUE=DATE:${parseICalDate(formatDate(d1Out))}
+SUMMARY:Airbnb (HM-89214) - Sophia Martinez
+DESCRIPTION:Reserva iCal activa en curso (${platform}).
 END:VEVENT
 BEGIN:VEVENT
-UID:booking-reservation-${propertyName.toLowerCase().replace(/[^a-z0-9]/g, '')}-102
+UID:airbnb-res-${propClean}-102
 DTSTAMP:${formatDate(now)}
-DTSTART;VALUE=DATE:${parseICalDate(formatDate(d2))}
-DTEND;VALUE=DATE:${parseICalDate(formatDate(d2End))}
-SUMMARY:${platform === 'Booking' ? 'Booking.com - Mateo Fernandez' : 'Airbnb (HM445122) - Mateo Fernandez'}
-DESCRIPTION:Reserva de 3 noches.
+DTSTART;VALUE=DATE:${parseICalDate(formatDate(d2In))}
+DTEND;VALUE=DATE:${parseICalDate(formatDate(d2Out))}
+SUMMARY:Airbnb (HM-99302) - Carlos Mendoza
+DESCRIPTION:Llegada el día de hoy. Reserva de 4 noches.
+END:VEVENT
+BEGIN:VEVENT
+UID:booking-res-${propClean}-103
+DTSTAMP:${formatDate(now)}
+DTSTART;VALUE=DATE:${parseICalDate(formatDate(d3In))}
+DTEND;VALUE=DATE:${parseICalDate(formatDate(d3Out))}
+SUMMARY:Booking.com - Laura Hernandez
+DESCRIPTION:Reserva confirmada de 4 noches.
+END:VEVENT
+BEGIN:VEVENT
+UID:airbnb-res-${propClean}-104
+DTSTAMP:${formatDate(now)}
+DTSTART;VALUE=DATE:${parseICalDate(formatDate(d4In))}
+DTEND;VALUE=DATE:${parseICalDate(formatDate(d4Out))}
+SUMMARY:Airbnb (HM-10492) - Alejandro Torres
+DESCRIPTION:Reserva confirmada mes actual.
+END:VEVENT
+BEGIN:VEVENT
+UID:vrbo-res-${propClean}-105
+DTSTAMP:${formatDate(now)}
+DTSTART;VALUE=DATE:${parseICalDate(formatDate(d5In))}
+DTEND;VALUE=DATE:${parseICalDate(formatDate(d5Out))}
+SUMMARY:Vrbo - Beatriz Ramirez
+DESCRIPTION:Reserva programada para el próximo mes.
 END:VEVENT
 END:VCALENDAR`;
 }

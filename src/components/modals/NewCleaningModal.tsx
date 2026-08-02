@@ -21,7 +21,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
   const [scheduledDate, setScheduledDate] = useState<string>(todayStr);
   const [assignedCleaner, setAssignedCleaner] = useState<string>('María Sánchez');
   const [cleanerPhone, setCleanerPhone] = useState<string>('+52 998 111 2233');
-  const [cost, setCost] = useState<number>(45);
+  const [cost, setCost] = useState<number | ''>(45);
   const [notes, setNotes] = useState<string>('Cambio de ropa de cama y sanitización de baños');
 
   if (!isOpen) return null;
@@ -45,7 +45,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
       scheduledDate,
       assignedCleaner: assignedCleaner || 'Por Asignar',
       cleanerPhone,
-      cost: Number(cost) || prop?.cleaningCost || 40,
+      cost: cost === '' ? (prop?.cleaningCost || 40) : Number(cost),
       status: 'pending',
       notes
     });
@@ -111,9 +111,15 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
             <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">WhatsApp:</label>
               <input
-                type="text"
+                type="tel"
                 value={cleanerPhone}
-                onChange={(e) => setCleanerPhone(e.target.value)}
+                onKeyDown={(e) => {
+                  if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                  if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => setCleanerPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                 placeholder="+52 998 111 2233"
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
@@ -127,7 +133,11 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
               required
               min="0"
               value={cost}
-              onChange={(e) => setCost(Number(e.target.value))}
+              onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+              onChange={(e) => {
+                const val = e.target.value;
+                setCost(val === '' ? '' : Math.max(0, Number(val)));
+              }}
               className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
             />
           </div>

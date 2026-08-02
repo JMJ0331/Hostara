@@ -80,8 +80,8 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!currentPasswordConfirm) {
-      setErrorMsg('Por protocolos de seguridad, ingresa tu contraseña actual para guardar los cambios.');
+    if (email !== currentUser.email && !currentPasswordConfirm) {
+      setErrorMsg('Por protocolos de seguridad, ingresa tu contraseña actual para cambiar tu correo electrónico.');
       return;
     }
 
@@ -89,10 +89,13 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
     try {
       const res = await fetch('/api/auth/update-profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email 
+        },
         body: JSON.stringify({
           email: currentUser.email,
-          currentPassword: currentPasswordConfirm,
+          currentPassword: currentPasswordConfirm || undefined,
           firstName,
           lastName,
           phone,
@@ -375,7 +378,13 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                       <input
                         type="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                          if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                         placeholder="+52 555 123 4567"
                         className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
                       />
@@ -387,16 +396,17 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                 <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-2">
                   <div className="flex items-center gap-2 text-amber-900 font-bold text-[11px]">
                     <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
-                    <span>Protocolo de Confirmación de Seguridad</span>
+                    <span>Confirmación de Seguridad</span>
                   </div>
                   <p className="text-[10px] text-amber-800">
-                    Ingresa tu contraseña actual para verificar tu identidad y guardar los cambios de tu perfil.
+                    {email !== currentUser.email 
+                      ? 'Requerido: Ingresa tu contraseña actual para autorizar el cambio de correo.' 
+                      : 'Opcional: Ingresa tu contraseña actual si deseas verificar los datos.'}
                   </p>
                   <div>
                     <input
                       type="password"
-                      required
-                      placeholder="Tu contraseña actual"
+                      placeholder={email !== currentUser.email ? 'Contraseña actual (Requerida para cambio de email)' : 'Contraseña actual (Opcional)'}
                       value={currentPasswordConfirm}
                       onChange={(e) => setCurrentPasswordConfirm(e.target.value)}
                       className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:ring-2 focus:ring-amber-400 focus:outline-none"

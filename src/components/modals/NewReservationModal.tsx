@@ -25,7 +25,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
   const [platform, setPlatform] = useState<Platform>('Direct');
   const [checkIn, setCheckIn] = useState(todayStr);
   const [checkOut, setCheckOut] = useState(tomorrowStr);
-  const [totalPaid, setTotalPaid] = useState<number>(360);
+  const [totalPaid, setTotalPaid] = useState<number | ''>(360);
   const [notes, setNotes] = useState('');
 
   if (!isOpen) return null;
@@ -112,9 +112,15 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
             <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Teléfono Huésped:</label>
               <input
-                type="text"
+                type="tel"
                 value={guestPhone}
-                onChange={(e) => setGuestPhone(e.target.value)}
+                onKeyDown={(e) => {
+                  if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                  if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => setGuestPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                 placeholder="+52 55 1234 5678"
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
               />
@@ -153,7 +159,11 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
                 required
                 min="0"
                 value={totalPaid}
-                onChange={(e) => setTotalPaid(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setTotalPaid(val === '' ? '' : Math.max(0, Number(val)));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-bold text-[#2D2D2D]"
               />
             </div>

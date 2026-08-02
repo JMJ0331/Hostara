@@ -475,7 +475,13 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                      if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                     placeholder="+52 555 123 4567"
                     className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />

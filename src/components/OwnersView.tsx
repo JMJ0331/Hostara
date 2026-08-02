@@ -26,7 +26,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [commissionRate, setCommissionRate] = useState(15);
+  const [commissionRate, setCommissionRate] = useState<number | ''>(15);
   const [payoutMethod, setPayoutMethod] = useState('Transferencia SPEI');
   const [accountNumber, setAccountNumber] = useState('');
 
@@ -57,7 +57,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
       name,
       email,
       phone,
-      commissionRate,
+      commissionRate: commissionRate === '' ? 15 : Number(commissionRate),
       payoutMethod,
       accountNumber
     });
@@ -72,7 +72,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
         name,
         email,
         phone,
-        commissionRate,
+        commissionRate: commissionRate === '' ? 15 : Number(commissionRate),
         payoutMethod,
         accountNumber
       });
@@ -233,9 +233,15 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                 <div>
                   <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Teléfono:</label>
                   <input
-                    type="text"
+                    type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                      if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                     className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
                     placeholder="+52 998 123 4567"
                   />
@@ -246,9 +252,13 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                   <input
                     type="number"
                     min="0"
-                    max="50"
+                    max="100"
                     value={commissionRate}
-                    onChange={(e) => setCommissionRate(Number(e.target.value))}
+                    onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCommissionRate(val === '' ? '' : Math.min(100, Math.max(0, Number(val))));
+                    }}
                     className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
                   />
                 </div>
@@ -324,9 +334,15 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                 <div>
                   <label className="block font-semibold mb-1 text-[#2D2D2D] truncate">Teléfono:</label>
                   <input
-                    type="text"
+                    type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                      if (!/[0-9+\s-]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
                     className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
                   />
                 </div>
@@ -336,9 +352,13 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                   <input
                     type="number"
                     min="0"
-                    max="50"
+                    max="100"
                     value={commissionRate}
-                    onChange={(e) => setCommissionRate(Number(e.target.value))}
+                    onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCommissionRate(val === '' ? '' : Math.min(100, Math.max(0, Number(val))));
+                    }}
                     className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
                   />
                 </div>

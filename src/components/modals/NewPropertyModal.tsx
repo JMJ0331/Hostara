@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CalendarSync } from 'lucide-react';
 import type { Owner, Platform, Property } from '../../types';
 
 interface NewPropertyModalProps {
@@ -7,7 +7,10 @@ interface NewPropertyModalProps {
   onClose: () => void;
   owners: Owner[];
   groups: string[];
+  propertyToEdit?: Property | null;
   onCreateProperty: (propData: Partial<Property>) => void;
+  onUpdateProperty?: (id: string, propData: Partial<Property>) => void;
+  onSyncPropertyICal?: (propertyId: string, icsContent?: string, url?: string) => void;
 }
 
 export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
@@ -15,21 +18,57 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
   onClose,
   owners,
   groups,
-  onCreateProperty
+  propertyToEdit,
+  onCreateProperty,
+  onUpdateProperty,
+  onSyncPropertyICal
 }) => {
   const [name, setName] = useState('');
   const [group, setGroup] = useState(groups[0] || 'Rialto Residences');
   const [isNewGroup, setIsNewGroup] = useState(false);
   const [newGroupInput, setNewGroupInput] = useState('');
   const [ownerId, setOwnerId] = useState(owners[0]?.id || '');
-  const [cleaningCost, setCleaningCost] = useState(45);
-  const [nightlyRateDefault, setNightlyRateDefault] = useState(130);
-  const [bedrooms, setBedrooms] = useState(2);
-  const [bathrooms, setBathrooms] = useState(2);
-  const [capacity, setCapacity] = useState(4);
+  const [cleaningCost, setCleaningCost] = useState<number | ''>(45);
+  const [nightlyRateDefault, setNightlyRateDefault] = useState<number | ''>(130);
+  const [bedrooms, setBedrooms] = useState<number | ''>(2);
+  const [bathrooms, setBathrooms] = useState<number | ''>(2);
+  const [capacity, setCapacity] = useState<number | ''>(4);
   const [platformDefault, setPlatformDefault] = useState<Platform>('Airbnb');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [icalUrl, setIcalUrl] = useState('');
+
+  useEffect(() => {
+    if (propertyToEdit) {
+      setName(propertyToEdit.name || '');
+      setGroup(propertyToEdit.group || groups[0] || 'Rialto Residences');
+      setOwnerId(propertyToEdit.ownerId || owners[0]?.id || '');
+      setCleaningCost(propertyToEdit.cleaningCost ?? 45);
+      setNightlyRateDefault(propertyToEdit.nightlyRateDefault ?? 130);
+      setBedrooms(propertyToEdit.bedrooms ?? 2);
+      setBathrooms(propertyToEdit.bathrooms ?? 2);
+      setCapacity(propertyToEdit.capacity ?? 4);
+      setPlatformDefault(propertyToEdit.platformDefault || 'Airbnb');
+      setAddress(propertyToEdit.address || '');
+      setNotes(propertyToEdit.notes || '');
+      setIcalUrl(propertyToEdit.icalUrl || '');
+    } else {
+      setName('');
+      setGroup(groups[0] || 'Rialto Residences');
+      setIsNewGroup(false);
+      setNewGroupInput('');
+      setOwnerId(owners[0]?.id || '');
+      setCleaningCost(45);
+      setNightlyRateDefault(130);
+      setBedrooms(2);
+      setBathrooms(2);
+      setCapacity(4);
+      setPlatformDefault('Airbnb');
+      setAddress('');
+      setNotes('');
+      setIcalUrl('');
+    }
+  }, [propertyToEdit, isOpen, groups, owners]);
 
   if (!isOpen) return null;
 
@@ -38,23 +77,33 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
     const finalGroup = isNewGroup ? (newGroupInput.trim() || 'Nuevo Complejo') : group;
     const selectedOwner = owners.find(o => o.id === ownerId);
 
-    onCreateProperty({
+    const payload: Partial<Property> = {
       name,
       group: finalGroup,
       ownerId,
       ownerName: selectedOwner?.name,
       ownerEmail: selectedOwner?.email,
       ownerPhone: selectedOwner?.phone,
-      cleaningCost: Number(cleaningCost) || 0,
-      nightlyRateDefault: Number(nightlyRateDefault) || 100,
-      bedrooms: Number(bedrooms) || 1,
-      bathrooms: Number(bathrooms) || 1,
-      capacity: Number(capacity) || 2,
+      cleaningCost: cleaningCost === '' ? 0 : Number(cleaningCost),
+      nightlyRateDefault: nightlyRateDefault === '' ? 100 : Number(nightlyRateDefault),
+      bedrooms: bedrooms === '' ? 1 : Number(bedrooms),
+      bathrooms: bathrooms === '' ? 1 : Number(bathrooms),
+      capacity: capacity === '' ? 2 : Number(capacity),
       platformDefault,
       address,
       notes,
+      icalUrl,
       active: true
-    });
+    };
+
+    if (propertyToEdit && onUpdateProperty) {
+      onUpdateProperty(propertyToEdit.id, payload);
+      if (icalUrl && onSyncPropertyICal) {
+        onSyncPropertyICal(propertyToEdit.id, undefined, icalUrl);
+      }
+    } else {
+      onCreateProperty(payload);
+    }
 
     onClose();
   };
@@ -63,7 +112,9 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
-          <h2 className="font-bold text-base text-[#2D2D2D]">Añadir Nueva Propiedad / Unidad</h2>
+          <h2 className="font-bold text-base text-[#2D2D2D]">
+            {propertyToEdit ? 'Editar Propiedad / Unidad' : 'Añadir Nueva Propiedad / Unidad'}
+          </h2>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
             <X className="w-5 h-5" />
           </button>
@@ -155,27 +206,53 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
             </div>
           </div>
 
+          {/* iCal Link Field */}
+          <div>
+            <label className="block font-semibold mb-1 text-purple-900 flex items-center gap-1.5">
+              <CalendarSync className="w-3.5 h-3.5 text-purple-700" />
+              <span>Enlace al calendario Airbnb (iCal):</span>
+            </label>
+            <input
+              type="url"
+              value={icalUrl}
+              onChange={(e) => setIcalUrl(e.target.value)}
+              placeholder="https://www.airbnb.com/calendar/ical/123456.ics?s=abcdef"
+              className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:ring-2 focus:ring-purple-300 focus:outline-none"
+            />
+            <p className="text-[10px] text-black/50 mt-1">
+              Al guardar con este enlace, se importarán automáticamente todas las reservas desde hoy en adelante.
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-semibold mb-1 truncate">Costo Limpieza ($):</label>
+              <label className="block font-semibold mb-1 truncate">Costo Limpieza ($ USD):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={cleaningCost}
-                onChange={(e) => setCleaningCost(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCleaningCost(val === '' ? '' : Math.max(0, Number(val)));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D] font-bold text-rose-700"
               />
             </div>
 
             <div>
-              <label className="block font-semibold mb-1 truncate">Tarifa / Noche ($):</label>
+              <label className="block font-semibold mb-1 truncate">Tarifa / Noche ($ USD):</label>
               <input
                 type="number"
                 required
                 min="0"
                 value={nightlyRateDefault}
-                onChange={(e) => setNightlyRateDefault(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNightlyRateDefault(val === '' ? '' : Math.max(0, Number(val)));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D] font-bold"
               />
             </div>
@@ -186,8 +263,13 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
               <label className="block font-semibold mb-1 truncate">Habitac.:</label>
               <input
                 type="number"
+                min="1"
                 value={bedrooms}
-                onChange={(e) => setBedrooms(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBedrooms(val === '' ? '' : Math.max(1, Math.floor(Number(val))));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
@@ -196,8 +278,13 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
               <label className="block font-semibold mb-1 truncate">Baños:</label>
               <input
                 type="number"
+                min="1"
                 value={bathrooms}
-                onChange={(e) => setBathrooms(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBathrooms(val === '' ? '' : Math.max(1, Math.floor(Number(val))));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
@@ -206,8 +293,13 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
               <label className="block font-semibold mb-1 truncate">Capacidad:</label>
               <input
                 type="number"
+                min="1"
                 value={capacity}
-                onChange={(e) => setCapacity(Number(e.target.value))}
+                onKeyDown={(e) => { if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCapacity(val === '' ? '' : Math.max(1, Math.floor(Number(val))));
+                }}
                 className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2 py-1.5 text-xs text-[#2D2D2D]"
               />
             </div>
@@ -247,7 +339,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
               type="submit"
               className="btn-primary text-xs px-5 py-2 shadow-xs"
             >
-              Guardar Propiedad
+              {propertyToEdit ? 'Guardar Cambios' : 'Guardar Propiedad'}
             </button>
           </div>
         </form>

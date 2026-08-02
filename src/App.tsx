@@ -68,6 +68,7 @@ export default function App() {
   const [isICalModalOpen, setIsICalModalOpen] = useState<boolean>(false);
   const [isNewResModalOpen, setIsNewResModalOpen] = useState<boolean>(false);
   const [isNewPropModalOpen, setIsNewPropModalOpen] = useState<boolean>(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [isNewCleaningModalOpen, setIsNewCleaningModalOpen] = useState<boolean>(false);
   const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState<boolean>(false);
   const [selectedReservationToEdit, setSelectedReservationToEdit] = useState<Reservation | null>(null);
@@ -91,16 +92,29 @@ export default function App() {
     onConfirm: () => {}
   });
 
+  // Helper for user-scoped API requests
+  const apiFetch = (url: string, options: RequestInit = {}) => {
+    const userEmail = currentUser?.email || '';
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {})
+    };
+    if (userEmail) {
+      headers['x-user-email'] = userEmail;
+    }
+    return fetch(url, { ...options, headers });
+  };
+
   // Fetch initial data from backend API
   const fetchAllData = async () => {
     try {
       const [statsRes, propsRes, resRes, cleanRes, ownersRes, groupsRes] = await Promise.all([
-        fetch('/api/stats').then(r => r.json()),
-        fetch('/api/properties').then(r => r.json()),
-        fetch('/api/reservations').then(r => r.json()),
-        fetch('/api/cleaning-tasks').then(r => r.json()),
-        fetch('/api/owners').then(r => r.json()),
-        fetch('/api/groups').then(r => r.json()).catch(() => [])
+        apiFetch('/api/stats').then(r => r.json()),
+        apiFetch('/api/properties').then(r => r.json()),
+        apiFetch('/api/reservations').then(r => r.json()),
+        apiFetch('/api/cleaning-tasks').then(r => r.json()),
+        apiFetch('/api/owners').then(r => r.json()),
+        apiFetch('/api/groups').then(r => r.json()).catch(() => [])
       ]);
 
       setStats(statsRes);
@@ -128,8 +142,11 @@ export default function App() {
         console.error('Session error:', e);
       }
     }
-    fetchAllData();
   }, []);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [currentUser]);
 
   const handleLogout = () => {
     localStorage.removeItem('hostara_session');
@@ -182,7 +199,7 @@ export default function App() {
   const handleSyncAllICal = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/ical/sync-all', { method: 'POST' });
+      const res = await apiFetch('/api/ical/sync-all', { method: 'POST' });
       await fetchAllData();
     } catch (error) {
       console.error('Error syncing all iCal:', error);
@@ -194,7 +211,7 @@ export default function App() {
   const handleSyncSingleICal = async (propertyId: string, icsContent?: string, url?: string) => {
     setIsSyncing(true);
     try {
-      const response = await fetch('/api/ical/sync', {
+      const response = await apiFetch('/api/ical/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ propertyId, icsContent, url })
@@ -211,7 +228,7 @@ export default function App() {
 
   const handleCreateReservation = async (resData: Partial<Reservation>) => {
     try {
-      await fetch('/api/reservations', {
+      await apiFetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(resData)
@@ -224,7 +241,7 @@ export default function App() {
 
   const handleUpdateReservation = async (id: string, updatedData: Partial<Reservation>) => {
     try {
-      await fetch(`/api/reservations/${id}`, {
+      await apiFetch(`/api/reservations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData)
@@ -237,7 +254,7 @@ export default function App() {
 
   const handleDeleteReservation = async (id: string) => {
     try {
-      await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/reservations/${id}`, { method: 'DELETE' });
       await fetchAllData();
     } catch (error) {
       console.error('Error deleting reservation:', error);
@@ -246,20 +263,40 @@ export default function App() {
 
   const handleCreateProperty = async (propData: Partial<Property>) => {
     try {
-      await fetch('/api/properties', {
+      const response = await apiFetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(propData)
       });
+      const newProp = await response.json();
       await fetchAllData();
+      if (propData.icalUrl && newProp.id) {
+        await handleSyncSingleICal(newProp.id, undefined, propData.icalUrl);
+      }
     } catch (error) {
       console.error('Error creating property:', error);
     }
   };
 
+  const handleUpdateProperty = async (id: string, propData: Partial<Property>) => {
+    try {
+      await apiFetch(`/api/properties/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(propData)
+      });
+      await fetchAllData();
+      if (propData.icalUrl) {
+        await handleSyncSingleICal(id, undefined, propData.icalUrl);
+      }
+    } catch (error) {
+      console.error('Error updating property:', error);
+    }
+  };
+
   const handleDeleteProperty = async (id: string) => {
     try {
-      await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/properties/${id}`, { method: 'DELETE' });
       await fetchAllData();
     } catch (error) {
       console.error('Error deleting property:', error);
@@ -268,7 +305,7 @@ export default function App() {
 
   const handleCreateCleaningTask = async (taskData: Partial<CleaningTask>) => {
     try {
-      await fetch('/api/cleaning-tasks', {
+      await apiFetch('/api/cleaning-tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData)
@@ -281,7 +318,7 @@ export default function App() {
 
   const handleUpdateCleaningStatus = async (id: string, status: CleaningStatus, cleanerName?: string) => {
     try {
-      await fetch(`/api/cleaning-tasks/${id}`, {
+      await apiFetch(`/api/cleaning-tasks/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, assignedCleaner: cleanerName })
@@ -294,7 +331,7 @@ export default function App() {
 
   const handleDeleteCleaningTask = async (id: string) => {
     try {
-      await fetch(`/api/cleaning-tasks/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/cleaning-tasks/${id}`, { method: 'DELETE' });
       await fetchAllData();
     } catch (error) {
       console.error('Error deleting cleaning task:', error);
@@ -303,7 +340,7 @@ export default function App() {
 
   const handleAddOwner = async (ownerData: Partial<Owner>) => {
     try {
-      await fetch('/api/owners', {
+      await apiFetch('/api/owners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ownerData)
@@ -316,7 +353,7 @@ export default function App() {
 
   const handleUpdateOwner = async (id: string, ownerData: Partial<Owner>) => {
     try {
-      await fetch(`/api/owners/${id}`, {
+      await apiFetch(`/api/owners/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ownerData)
@@ -329,7 +366,7 @@ export default function App() {
 
   const handleDeleteOwner = async (id: string) => {
     try {
-      await fetch(`/api/owners/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/owners/${id}`, { method: 'DELETE' });
       await fetchAllData();
     } catch (error) {
       console.error('Error deleting owner:', error);
@@ -339,7 +376,7 @@ export default function App() {
   // Group / Complex CRUD
   const handleAddGroup = async (name: string) => {
     try {
-      await fetch('/api/groups', {
+      await apiFetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
@@ -352,7 +389,7 @@ export default function App() {
 
   const handleUpdateGroup = async (oldName: string, newName: string) => {
     try {
-      await fetch(`/api/groups/${encodeURIComponent(oldName)}`, {
+      await apiFetch(`/api/groups/${encodeURIComponent(oldName)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newName })
@@ -365,7 +402,7 @@ export default function App() {
 
   const handleDeleteGroup = async (name: string) => {
     try {
-      await fetch(`/api/groups/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      await apiFetch(`/api/groups/${encodeURIComponent(name)}`, { method: 'DELETE' });
       await fetchAllData();
     } catch (error) {
       console.error('Error deleting group:', error);
@@ -498,9 +535,15 @@ export default function App() {
             <PropertiesView
               properties={filteredProperties}
               groups={groups}
-              onOpenNewPropModal={() => setIsNewPropModalOpen(true)}
+              onOpenNewPropModal={() => {
+                setEditingProperty(null);
+                setIsNewPropModalOpen(true);
+              }}
               onOpenManageGroupsModal={() => setIsManageGroupsModalOpen(true)}
-              onEditProperty={(prop) => setIsNewPropModalOpen(true)}
+              onEditProperty={(prop) => {
+                setEditingProperty(prop);
+                setIsNewPropModalOpen(true);
+              }}
               onDeleteProperty={requestDeleteProperty}
               onSyncPropertyICal={(pId) => handleSyncSingleICal(pId)}
             />
@@ -567,10 +610,16 @@ export default function App() {
 
       <NewPropertyModal
         isOpen={isNewPropModalOpen}
-        onClose={() => setIsNewPropModalOpen(false)}
+        onClose={() => {
+          setIsNewPropModalOpen(false);
+          setEditingProperty(null);
+        }}
         owners={owners}
         groups={groups}
+        propertyToEdit={editingProperty}
         onCreateProperty={handleCreateProperty}
+        onUpdateProperty={handleUpdateProperty}
+        onSyncPropertyICal={handleSyncSingleICal}
       />
 
       <NewCleaningModal

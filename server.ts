@@ -7,7 +7,8 @@ import type { Property, Reservation, CleaningTask, Owner, SyncLog, DashboardStat
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Helper date utilities
 const getTodayStr = (): string => new Date().toISOString().split('T')[0];
@@ -23,281 +24,34 @@ const tomorrowStr = addDays(todayStr, 1);
 const inThreeDaysStr = addDays(todayStr, 3);
 const inFiveDaysStr = addDays(todayStr, 5);
 
-// In-Memory Database Store initialized with realistic sample data
-let owners: Owner[] = [
-  {
-    id: 'owner-1',
-    name: 'Alejandro Rialto',
-    email: 'alejandro@rialto-residences.com',
-    phone: '+52 998 123 4567',
-    commissionRate: 15,
-    payoutMethod: 'Transferencia Bancaria SPEI',
-    accountNumber: 'CLABE **** 8923'
-  },
-  {
-    id: 'owner-2',
-    name: 'Camila Palma',
-    email: 'camila.palma@luxurycondos.mx',
-    phone: '+52 998 887 6543',
-    commissionRate: 18,
-    payoutMethod: 'Transferencia BBVA',
-    accountNumber: 'CLABE **** 1102'
-  },
-  {
-    id: 'owner-3',
-    name: 'Roberto Mendoza',
-    email: 'roberto.mendoza@villasunsets.com',
-    phone: '+52 998 554 3210',
-    commissionRate: 15,
-    payoutMethod: 'PayPal / Wire',
-    accountNumber: 'roberto@villasunsets.com'
+// Per-User Store definition
+interface UserStore {
+  owners: Owner[];
+  properties: Property[];
+  reservations: Reservation[];
+  cleaningTasks: CleaningTask[];
+  customGroups: string[];
+  syncLogs: SyncLog[];
+}
+
+const userStores = new Map<string, UserStore>();
+
+function getStoreForReq(req: express.Request): UserStore {
+  const emailHeader = (req.headers['x-user-email'] as string) || (req.query?.userEmail as string) || '';
+  const key = emailHeader.trim().toLowerCase() || 'default';
+  
+  if (!userStores.has(key)) {
+    userStores.set(key, {
+      owners: [],
+      properties: [],
+      reservations: [],
+      cleaningTasks: [],
+      customGroups: ['Unidades Individuales'],
+      syncLogs: []
+    });
   }
-];
-
-let properties: Property[] = [
-  {
-    id: 'prop-1',
-    name: 'Apartamento 101',
-    group: 'Rialto Residences',
-    ownerId: 'owner-1',
-    ownerName: 'Alejandro Rialto',
-    ownerEmail: 'alejandro@rialto-residences.com',
-    ownerPhone: '+52 998 123 4567',
-    cleaningCost: 40,
-    icalUrl: 'http://localhost:3000/api/ical/sample/prop-1',
-    platformDefault: 'Airbnb',
-    address: 'Av. Kukulkan Km 12, Zona Hotelera',
-    bedrooms: 2,
-    bathrooms: 2,
-    capacity: 4,
-    nightlyRateDefault: 120,
-    active: true,
-    notes: 'Vista al mar. Código de acceso cerradura inteligente 4821.'
-  },
-  {
-    id: 'prop-2',
-    name: 'Apartamento 102',
-    group: 'Rialto Residences',
-    ownerId: 'owner-1',
-    ownerName: 'Alejandro Rialto',
-    ownerEmail: 'alejandro@rialto-residences.com',
-    ownerPhone: '+52 998 123 4567',
-    cleaningCost: 45,
-    icalUrl: 'http://localhost:3000/api/ical/sample/prop-2',
-    platformDefault: 'Booking',
-    address: 'Av. Kukulkan Km 12, Zona Hotelera',
-    bedrooms: 2,
-    bathrooms: 2,
-    capacity: 5,
-    nightlyRateDefault: 140,
-    active: true,
-    notes: 'Planta baja con terraza privada.'
-  },
-  {
-    id: 'prop-3',
-    name: 'Penthouse Rialto 401',
-    group: 'Rialto Residences',
-    ownerId: 'owner-1',
-    ownerName: 'Alejandro Rialto',
-    ownerEmail: 'alejandro@rialto-residences.com',
-    ownerPhone: '+52 998 123 4567',
-    cleaningCost: 75,
-    icalUrl: 'http://localhost:3000/api/ical/sample/prop-3',
-    platformDefault: 'Airbnb',
-    address: 'Av. Kukulkan Km 12, Zona Hotelera',
-    bedrooms: 3,
-    bathrooms: 3,
-    capacity: 7,
-    nightlyRateDefault: 260,
-    active: true,
-    notes: 'Jacuzzi privado en rooftop. Requiere revisión especial de limpieza.'
-  },
-  {
-    id: 'prop-4',
-    name: 'Suite 201 Sea View',
-    group: 'Palma Luxury Suites',
-    ownerId: 'owner-2',
-    ownerName: 'Camila Palma',
-    ownerEmail: 'camila.palma@luxurycondos.mx',
-    ownerPhone: '+52 998 887 6543',
-    cleaningCost: 50,
-    icalUrl: 'http://localhost:3000/api/ical/sample/prop-4',
-    platformDefault: 'Direct',
-    address: 'Calle Flamingo #14, Marina',
-    bedrooms: 1,
-    bathrooms: 1,
-    capacity: 2,
-    nightlyRateDefault: 180,
-    active: true,
-    notes: 'Suite ejecutiva para parejas.'
-  },
-  {
-    id: 'prop-5',
-    name: 'Villa Sunset Oasis',
-    group: 'Unidades Individuales',
-    ownerId: 'owner-3',
-    ownerName: 'Roberto Mendoza',
-    ownerEmail: 'roberto.mendoza@villasunsets.com',
-    ownerPhone: '+52 998 554 3210',
-    cleaningCost: 90,
-    icalUrl: 'http://localhost:3000/api/ical/sample/prop-5',
-    platformDefault: 'Vrbo',
-    address: 'Playa del Carmen, Paseo Xaman-Ha',
-    bedrooms: 4,
-    bathrooms: 4,
-    capacity: 10,
-    nightlyRateDefault: 350,
-    active: true,
-    notes: 'Alberca propia. Check-in con ama de llaves.'
-  }
-];
-
-let reservations: Reservation[] = [
-  {
-    id: 'res-101',
-    propertyId: 'prop-1',
-    propertyName: 'Apartamento 101',
-    propertyGroup: 'Rialto Residences',
-    guestName: 'Lucía Fernández',
-    guestPhone: '+52 55 1234 5678',
-    guestEmail: 'lucia.f@gmail.com',
-    platform: 'Airbnb',
-    checkIn: addDays(todayStr, -3),
-    checkOut: todayStr, // Check-out TODAY!
-    totalPaid: 360,
-    cleaningCost: 40,
-    netAmount: 320,
-    status: 'active',
-    externalId: 'airbnb-hm101-todayout',
-    notes: 'Solicitó salida tarde a las 11:30 AM.',
-    payoutStatus: 'paid',
-    createdVia: 'ical',
-    syncedAt: new Date().toISOString()
-  },
-  {
-    id: 'res-102',
-    propertyId: 'prop-2',
-    propertyName: 'Apartamento 102',
-    propertyGroup: 'Rialto Residences',
-    guestName: 'Mark Williams',
-    guestPhone: '+1 305 555 0199',
-    guestEmail: 'm.williams@miami.com',
-    platform: 'Booking',
-    checkIn: todayStr, // Check-in TODAY!
-    checkOut: inThreeDaysStr,
-    totalPaid: 420,
-    cleaningCost: 45,
-    netAmount: 375,
-    status: 'active',
-    externalId: 'booking-bk202-todayin',
-    notes: 'Vuelo llega a las 4:00 PM.',
-    payoutStatus: 'pending',
-    createdVia: 'manual'
-  },
-  {
-    id: 'res-103',
-    propertyId: 'prop-3',
-    propertyName: 'Penthouse Rialto 401',
-    propertyGroup: 'Rialto Residences',
-    guestName: 'Carlos Slim Helú',
-    guestPhone: '+52 55 9999 8888',
-    platform: 'Direct',
-    checkIn: addDays(todayStr, -2),
-    checkOut: inFiveDaysStr,
-    totalPaid: 1820,
-    cleaningCost: 75,
-    netAmount: 1745,
-    status: 'active',
-    externalId: 'direct-dt301-active',
-    notes: 'Pago completo por transferencia.',
-    payoutStatus: 'paid',
-    createdVia: 'manual'
-  },
-  {
-    id: 'res-104',
-    propertyId: 'prop-4',
-    propertyName: 'Suite 201 Sea View',
-    propertyGroup: 'Palma Luxury Suites',
-    guestName: 'Sophie & Marc Laurent',
-    guestPhone: '+33 6 12 34 56 78',
-    platform: 'Airbnb',
-    checkIn: addDays(todayStr, -4),
-    checkOut: todayStr, // Check-out TODAY!
-    totalPaid: 720,
-    cleaningCost: 50,
-    netAmount: 670,
-    status: 'active',
-    externalId: 'airbnb-hm401-todayout',
-    notes: 'Aniversario de bodas. Dejaron botella de vino.',
-    payoutStatus: 'paid',
-    createdVia: 'ical'
-  },
-  {
-    id: 'res-105',
-    propertyId: 'prop-5',
-    propertyName: 'Villa Sunset Oasis',
-    propertyGroup: 'Unidades Individuales',
-    guestName: 'Familia Ramirez',
-    guestPhone: '+52 81 8300 1234',
-    platform: 'Vrbo',
-    checkIn: inThreeDaysStr,
-    checkOut: addDays(todayStr, 8),
-    totalPaid: 1750,
-    cleaningCost: 90,
-    netAmount: 1660,
-    status: 'active',
-    externalId: 'vrbo-vr501-future',
-    notes: 'Check-in confirmado con ama de llaves.',
-    payoutStatus: 'pending',
-    createdVia: 'manual'
-  }
-];
-
-let cleaningTasks: CleaningTask[] = [
-  {
-    id: 'clean-101',
-    reservationId: 'res-101',
-    propertyId: 'prop-1',
-    propertyName: 'Apartamento 101',
-    propertyGroup: 'Rialto Residences',
-    scheduledDate: todayStr,
-    status: 'pending',
-    assignedCleaner: 'María Sánchez',
-    cleanerPhone: '+52 998 111 2233',
-    cost: 40,
-    notes: 'Prioritaria: Check-out hoy a las 11:30 AM.'
-  },
-  {
-    id: 'clean-104',
-    reservationId: 'res-104',
-    propertyId: 'prop-4',
-    propertyName: 'Suite 201 Sea View',
-    propertyGroup: 'Palma Luxury Suites',
-    scheduledDate: todayStr,
-    status: 'in_progress',
-    assignedCleaner: 'Juana Pérez',
-    cleanerPhone: '+52 998 444 5566',
-    cost: 50,
-    notes: 'Cambio de blancos completo y revisión de terraza.'
-  },
-  {
-    id: 'clean-100',
-    propertyId: 'prop-2',
-    propertyName: 'Apartamento 102',
-    propertyGroup: 'Rialto Residences',
-    scheduledDate: todayStr,
-    status: 'completed',
-    assignedCleaner: 'LavaPro Cleaners',
-    cleanerPhone: '+52 998 777 8899',
-    cost: 45,
-    notes: 'Lista para el check-in de hoy a las 4 PM.',
-    completedAt: new Date().toISOString()
-  }
-];
-
-let customGroups: string[] = ['Rialto Residences', 'Palma Luxury Suites', 'Unidades Individuales'];
-
-let syncLogs: SyncLog[] = [];
+  return userStores.get(key)!;
+}
 
 // Auth User Interface & In-Memory Store
 interface AuthUser {
@@ -522,25 +276,32 @@ app.post('/api/auth/reset-password', (req, res) => {
 
 app.post('/api/auth/update-profile', (req, res) => {
   const { email, currentPassword, firstName, lastName, phone, newEmail, avatarUrl } = req.body;
-  if (!email || !currentPassword) {
-    return res.status(400).json({ error: 'Debes confirmar con tu contraseña actual para guardar cambios.' });
+  if (!email) {
+    return res.status(400).json({ error: 'El correo electrónico es requerido.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
   const user = users.find(u => u.email.toLowerCase() === cleanEmail);
 
-  if (!user || user.password !== currentPassword) {
-    return res.status(400).json({ error: 'La contraseña actual es incorrecta. Verificación de seguridad fallida.' });
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado.' });
   }
 
-  // If changing email, check uniqueness
+  // If changing email, require password check
   if (newEmail && newEmail.trim().toLowerCase() !== cleanEmail) {
+    if (!currentPassword || user.password !== currentPassword) {
+      return res.status(400).json({ error: 'La contraseña actual es incorrecta para cambiar de correo.' });
+    }
     const targetEmail = newEmail.trim().toLowerCase();
     const existing = users.find(u => u.email.toLowerCase() === targetEmail);
     if (existing) {
       return res.status(400).json({ error: 'El nuevo correo electrónico ya está registrado en otra cuenta.' });
     }
     user.email = targetEmail;
+  } else if (currentPassword) {
+    if (user.password !== currentPassword) {
+      return res.status(400).json({ error: 'La contraseña actual es incorrecta.' });
+    }
   }
 
   if (firstName !== undefined) user.firstName = firstName.trim();
@@ -587,24 +348,27 @@ app.post('/api/auth/change-password', (req, res) => {
 
 // 0. Groups / Complexes
 app.get('/api/groups', (req, res) => {
-  const propGroups = properties.map(p => p.group);
-  const all = Array.from(new Set([...customGroups, ...propGroups]));
+  const store = getStoreForReq(req);
+  const propGroups = store.properties.map(p => p.group);
+  const all = Array.from(new Set([...store.customGroups, ...propGroups]));
   res.json(all);
 });
 
 app.post('/api/groups', (req, res) => {
+  const store = getStoreForReq(req);
   const { name } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Nombre de complejo requerido' });
   }
   const clean = name.trim();
-  if (!customGroups.includes(clean)) {
-    customGroups.push(clean);
+  if (!store.customGroups.includes(clean)) {
+    store.customGroups.push(clean);
   }
   res.status(201).json({ success: true, name: clean });
 });
 
 app.put('/api/groups/:oldName', (req, res) => {
+  const store = getStoreForReq(req);
   const oldName = decodeURIComponent(req.params.oldName);
   const { newName } = req.body;
   if (!newName || !newName.trim()) {
@@ -612,37 +376,39 @@ app.put('/api/groups/:oldName', (req, res) => {
   }
   const cleanNew = newName.trim();
 
-  const idx = customGroups.indexOf(oldName);
-  if (idx !== -1) customGroups[idx] = cleanNew;
-  else customGroups.push(cleanNew);
+  const idx = store.customGroups.indexOf(oldName);
+  if (idx !== -1) store.customGroups[idx] = cleanNew;
+  else store.customGroups.push(cleanNew);
 
-  properties.forEach(p => { if (p.group === oldName) p.group = cleanNew; });
-  reservations.forEach(r => { if (r.propertyGroup === oldName) r.propertyGroup = cleanNew; });
-  cleaningTasks.forEach(t => { if (t.propertyGroup === oldName) t.propertyGroup = cleanNew; });
+  store.properties.forEach(p => { if (p.group === oldName) p.group = cleanNew; });
+  store.reservations.forEach(r => { if (r.propertyGroup === oldName) r.propertyGroup = cleanNew; });
+  store.cleaningTasks.forEach(t => { if (t.propertyGroup === oldName) t.propertyGroup = cleanNew; });
 
   res.json({ success: true, oldName, newName: cleanNew });
 });
 
 app.delete('/api/groups/:name', (req, res) => {
+  const store = getStoreForReq(req);
   const name = decodeURIComponent(req.params.name);
-  customGroups = customGroups.filter(g => g !== name);
+  store.customGroups = store.customGroups.filter(g => g !== name);
 
-  properties.forEach(p => { if (p.group === name) p.group = 'Unidades Individuales'; });
-  reservations.forEach(r => { if (r.propertyGroup === name) r.propertyGroup = 'Unidades Individuales'; });
-  cleaningTasks.forEach(t => { if (t.propertyGroup === name) t.propertyGroup = 'Unidades Individuales'; });
+  store.properties.forEach(p => { if (p.group === name) p.group = 'Unidades Individuales'; });
+  store.reservations.forEach(r => { if (r.propertyGroup === name) r.propertyGroup = 'Unidades Individuales'; });
+  store.cleaningTasks.forEach(t => { if (t.propertyGroup === name) t.propertyGroup = 'Unidades Individuales'; });
 
   res.json({ success: true, message: 'Complejo eliminado' });
 });
 
 // 1. Stats
 app.get('/api/stats', (req, res) => {
-  const activeBookings = reservations.filter(r => r.status === 'active').length;
-  const checkOutsToday = reservations.filter(r => r.checkOut === todayStr && r.status === 'active').length;
-  const checkInsToday = reservations.filter(r => r.checkIn === todayStr && r.status === 'active').length;
-  const pendingCleaningCount = cleaningTasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
+  const store = getStoreForReq(req);
+  const activeBookings = store.reservations.filter(r => r.status === 'active').length;
+  const checkOutsToday = store.reservations.filter(r => r.checkOut === todayStr && r.status === 'active').length;
+  const checkInsToday = store.reservations.filter(r => r.checkIn === todayStr && r.status === 'active').length;
+  const pendingCleaningCount = store.cleaningTasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
 
-  const totalRevenue = reservations.reduce((acc, r) => acc + (r.totalPaid || 0), 0);
-  const totalCleaningExpenses = reservations.reduce((acc, r) => acc + (r.cleaningCost || 0), 0);
+  const totalRevenue = store.reservations.reduce((acc, r) => acc + (r.totalPaid || 0), 0);
+  const totalCleaningExpenses = store.reservations.reduce((acc, r) => acc + (r.cleaningCost || 0), 0);
   const netIncome = totalRevenue - totalCleaningExpenses;
 
   const stats: DashboardStats = {
@@ -653,7 +419,7 @@ app.get('/api/stats', (req, res) => {
     totalRevenue,
     totalCleaningExpenses,
     netIncome,
-    occupancyRatePercentage: 84
+    occupancyRatePercentage: store.properties.length > 0 ? Math.min(100, Math.round((activeBookings / store.properties.length) * 100)) : 0
   };
 
   res.json(stats);
@@ -661,10 +427,11 @@ app.get('/api/stats', (req, res) => {
 
 // 2. Properties
 app.get('/api/properties', (req, res) => {
-  res.json(properties);
+  res.json(getStoreForReq(req).properties);
 });
 
 app.post('/api/properties', (req, res) => {
+  const store = getStoreForReq(req);
   const newProp: Property = {
     id: `prop-${Date.now()}`,
     name: req.body.name || 'Nueva Propiedad',
@@ -685,40 +452,43 @@ app.post('/api/properties', (req, res) => {
     notes: req.body.notes || ''
   };
 
-  properties.unshift(newProp);
+  store.properties.unshift(newProp);
   res.status(201).json(newProp);
 });
 
 app.put('/api/properties/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  const index = properties.findIndex(p => p.id === id);
+  const index = store.properties.findIndex(p => p.id === id);
   if (index === -1) {
     return res.status(404).json({ error: 'Propiedad no encontrada' });
   }
 
-  properties[index] = {
-    ...properties[index],
+  store.properties[index] = {
+    ...store.properties[index],
     ...req.body,
-    cleaningCost: req.body.cleaningCost !== undefined ? Number(req.body.cleaningCost) : properties[index].cleaningCost,
-    nightlyRateDefault: req.body.nightlyRateDefault !== undefined ? Number(req.body.nightlyRateDefault) : properties[index].nightlyRateDefault
+    cleaningCost: req.body.cleaningCost !== undefined ? Number(req.body.cleaningCost) : store.properties[index].cleaningCost,
+    nightlyRateDefault: req.body.nightlyRateDefault !== undefined ? Number(req.body.nightlyRateDefault) : store.properties[index].nightlyRateDefault
   };
 
-  res.json(properties[index]);
+  res.json(store.properties[index]);
 });
 
 app.delete('/api/properties/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  properties = properties.filter(p => p.id !== id);
+  store.properties = store.properties.filter(p => p.id !== id);
   res.json({ success: true, message: 'Propiedad eliminada' });
 });
 
 // 3. Reservations
 app.get('/api/reservations', (req, res) => {
-  res.json(reservations);
+  res.json(getStoreForReq(req).reservations);
 });
 
 app.post('/api/reservations', (req, res) => {
-  const prop = properties.find(p => p.id === req.body.propertyId);
+  const store = getStoreForReq(req);
+  const prop = store.properties.find(p => p.id === req.body.propertyId);
   const totalPaid = Number(req.body.totalPaid) || 0;
   const cleaningCost = Number(req.body.cleaningCost || prop?.cleaningCost || 0);
 
@@ -743,7 +513,7 @@ app.post('/api/reservations', (req, res) => {
     createdVia: 'manual'
   };
 
-  reservations.unshift(newRes);
+  store.reservations.unshift(newRes);
 
   // Auto-create a cleaning task for checkout date if active
   if (newRes.status === 'active') {
@@ -759,46 +529,49 @@ app.post('/api/reservations', (req, res) => {
       cost: cleaningCost,
       notes: `Limpieza tras salida de ${newRes.guestName}`
     };
-    cleaningTasks.unshift(cleaningTask);
+    store.cleaningTasks.unshift(cleaningTask);
   }
 
   res.status(201).json(newRes);
 });
 
 app.put('/api/reservations/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  const index = reservations.findIndex(r => r.id === id);
+  const index = store.reservations.findIndex(r => r.id === id);
   if (index === -1) {
     return res.status(404).json({ error: 'Reserva no encontrada' });
   }
 
-  const updatedTotal = req.body.totalPaid !== undefined ? Number(req.body.totalPaid) : reservations[index].totalPaid;
-  const updatedCleaning = req.body.cleaningCost !== undefined ? Number(req.body.cleaningCost) : reservations[index].cleaningCost;
+  const updatedTotal = req.body.totalPaid !== undefined ? Number(req.body.totalPaid) : store.reservations[index].totalPaid;
+  const updatedCleaning = req.body.cleaningCost !== undefined ? Number(req.body.cleaningCost) : store.reservations[index].cleaningCost;
 
-  reservations[index] = {
-    ...reservations[index],
+  store.reservations[index] = {
+    ...store.reservations[index],
     ...req.body,
     totalPaid: updatedTotal,
     cleaningCost: updatedCleaning,
     netAmount: updatedTotal - updatedCleaning
   };
 
-  res.json(reservations[index]);
+  res.json(store.reservations[index]);
 });
 
 app.delete('/api/reservations/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  reservations = reservations.filter(r => r.id !== id);
+  store.reservations = store.reservations.filter(r => r.id !== id);
   res.json({ success: true, message: 'Reserva eliminada' });
 });
 
 // 4. Cleaning Tasks
 app.get('/api/cleaning-tasks', (req, res) => {
-  res.json(cleaningTasks);
+  res.json(getStoreForReq(req).cleaningTasks);
 });
 
 app.post('/api/cleaning-tasks', (req, res) => {
-  const prop = properties.find(p => p.id === req.body.propertyId);
+  const store = getStoreForReq(req);
+  const prop = store.properties.find(p => p.id === req.body.propertyId);
   const newTask: CleaningTask = {
     id: `clean-${Date.now()}`,
     reservationId: req.body.reservationId,
@@ -813,40 +586,43 @@ app.post('/api/cleaning-tasks', (req, res) => {
     notes: req.body.notes || ''
   };
 
-  cleaningTasks.unshift(newTask);
+  store.cleaningTasks.unshift(newTask);
   res.status(201).json(newTask);
 });
 
 app.put('/api/cleaning-tasks/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  const index = cleaningTasks.findIndex(t => t.id === id);
+  const index = store.cleaningTasks.findIndex(t => t.id === id);
   if (index === -1) {
     return res.status(404).json({ error: 'Tarea de limpieza no encontrada' });
   }
 
-  cleaningTasks[index] = {
-    ...cleaningTasks[index],
+  store.cleaningTasks[index] = {
+    ...store.cleaningTasks[index],
     ...req.body,
     completedAt: req.body.status === 'completed' || req.body.status === 'verified' 
-      ? (cleaningTasks[index].completedAt || new Date().toISOString()) 
+      ? (store.cleaningTasks[index].completedAt || new Date().toISOString()) 
       : undefined
   };
 
-  res.json(cleaningTasks[index]);
+  res.json(store.cleaningTasks[index]);
 });
 
 app.delete('/api/cleaning-tasks/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  cleaningTasks = cleaningTasks.filter(t => t.id !== id);
+  store.cleaningTasks = store.cleaningTasks.filter(t => t.id !== id);
   res.json({ success: true, message: 'Tarea de limpieza eliminada' });
 });
 
 // 5. Owners
 app.get('/api/owners', (req, res) => {
-  res.json(owners);
+  res.json(getStoreForReq(req).owners);
 });
 
 app.post('/api/owners', (req, res) => {
+  const store = getStoreForReq(req);
   const newOwner: Owner = {
     id: `owner-${Date.now()}`,
     name: req.body.name,
@@ -856,27 +632,28 @@ app.post('/api/owners', (req, res) => {
     payoutMethod: req.body.payoutMethod || '',
     accountNumber: req.body.accountNumber || ''
   };
-  owners.unshift(newOwner);
+  store.owners.unshift(newOwner);
   res.status(201).json(newOwner);
 });
 
 app.put('/api/owners/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  const index = owners.findIndex(o => o.id === id);
+  const index = store.owners.findIndex(o => o.id === id);
   if (index !== -1) {
-    owners[index] = {
-      ...owners[index],
-      name: req.body.name ?? owners[index].name,
-      email: req.body.email ?? owners[index].email,
-      phone: req.body.phone ?? owners[index].phone,
-      commissionRate: req.body.commissionRate !== undefined ? Number(req.body.commissionRate) : owners[index].commissionRate,
-      payoutMethod: req.body.payoutMethod ?? owners[index].payoutMethod,
-      accountNumber: req.body.accountNumber ?? owners[index].accountNumber
+    store.owners[index] = {
+      ...store.owners[index],
+      name: req.body.name ?? store.owners[index].name,
+      email: req.body.email ?? store.owners[index].email,
+      phone: req.body.phone ?? store.owners[index].phone,
+      commissionRate: req.body.commissionRate !== undefined ? Number(req.body.commissionRate) : store.owners[index].commissionRate,
+      payoutMethod: req.body.payoutMethod ?? store.owners[index].payoutMethod,
+      accountNumber: req.body.accountNumber ?? store.owners[index].accountNumber
     };
     
     // Propagate updated owner details to properties
     if (req.body.name) {
-      properties.forEach(p => {
+      store.properties.forEach(p => {
         if (p.ownerId === id) {
           p.ownerName = req.body.name;
           if (req.body.email) p.ownerEmail = req.body.email;
@@ -885,20 +662,22 @@ app.put('/api/owners/:id', (req, res) => {
       });
     }
 
-    return res.json(owners[index]);
+    return res.json(store.owners[index]);
   }
   return res.status(404).json({ error: 'Propietario no encontrado' });
 });
 
 app.delete('/api/owners/:id', (req, res) => {
+  const store = getStoreForReq(req);
   const { id } = req.params;
-  owners = owners.filter(o => o.id !== id);
+  store.owners = store.owners.filter(o => o.id !== id);
   res.json({ success: true, message: 'Propietario eliminado' });
 });
 
 // 6. iCal Sync Service
 app.get('/api/ical/sample/:propId', (req, res) => {
-  const prop = properties.find(p => p.id === req.params.propId) || properties[0];
+  const store = getStoreForReq(req);
+  const prop = store.properties.find(p => p.id === req.params.propId) || store.properties[0] || { name: 'Propiedad', platformDefault: 'Airbnb' };
   const ics = generateSampleICalFeed(prop.name, prop.platformDefault);
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="${prop.name.replace(/[^a-z0-9]/gi, '_')}.ics"`);
@@ -907,21 +686,24 @@ app.get('/api/ical/sample/:propId', (req, res) => {
 
 // Sync single property iCal
 app.post('/api/ical/sync', async (req, res) => {
+  const store = getStoreForReq(req);
   const { propertyId, icsContent, url } = req.body;
-  const prop = properties.find(p => p.id === propertyId);
+  const prop = store.properties.find(p => p.id === propertyId);
 
   if (!prop) {
     return res.status(404).json({ error: 'Propiedad no encontrada' });
   }
 
+  // Update property icalUrl if custom url provided
+  if (url && url !== `/api/ical/sample/${propertyId}`) {
+    prop.icalUrl = url;
+  }
+
   try {
     let rawIcs = icsContent;
+    const targetUrl = url || prop.icalUrl;
 
-    // If no raw ics string is passed, try generating or fetching from URL
-    if (!rawIcs && (url || prop.icalUrl)) {
-      const targetUrl = url || prop.icalUrl;
-      
-      // If it's a sample API link within our server, call parser generator directly
+    if (!rawIcs && targetUrl) {
       if (targetUrl.includes('/api/ical/sample/')) {
         rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
       } else {
@@ -930,31 +712,57 @@ app.post('/api/ical/sync', async (req, res) => {
           if (fetchRes.ok) {
             rawIcs = await fetchRes.text();
           } else {
-            rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
+            return res.status(400).json({ error: 'No se pudo obtener el archivo iCal desde la URL proporcionada. Verifique el enlace.' });
           }
         } catch {
-          // Fallback to sample generator if offline/external network error
-          rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
+          return res.status(400).json({ error: 'Error de red al conectar con el servidor iCal. Verifique la URL de iCal.' });
         }
       }
-    } else if (!rawIcs) {
-      rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
+    }
+
+    if (!rawIcs) {
+      const log: SyncLog = {
+        id: `log-${Date.now()}`,
+        propertyId: prop.id,
+        propertyName: prop.name,
+        syncedAt: new Date().toISOString(),
+        status: 'success',
+        reservationsFound: 0,
+        reservationsCreated: 0,
+        reservationsUpdated: 0,
+        message: 'No hay URL iCal configurada para esta propiedad.'
+      };
+      store.syncLogs.unshift(log);
+      return res.json({
+        success: true,
+        log,
+        createdCount: 0,
+        events: []
+      });
     }
 
     const events = parseICalString(rawIcs);
     let createdCount = 0;
     let updatedCount = 0;
+    const currentTodayStr = getTodayStr();
 
     for (const event of events) {
-      // Check for duplicate by externalId (iCal UID)
-      const existing = reservations.find(r => r.externalId === event.uid);
+      // Ensure we include reservations from current date/month onwards (checkOut >= todayStr)
+      if (event.checkOut < currentTodayStr) {
+        continue;
+      }
+
+      // Strict deduplication by externalId UID or exact property + checkIn + checkOut
+      const existing = store.reservations.find(r => 
+        (r.externalId && r.externalId === event.uid) ||
+        (r.propertyId === prop.id && r.checkIn === event.checkIn && r.checkOut === event.checkOut)
+      );
 
       if (!existing) {
-        // Calculate estimated nights & total
         const dIn = new Date(event.checkIn);
         const dOut = new Date(event.checkOut);
         const diffDays = Math.max(1, Math.round((dOut.getTime() - dIn.getTime()) / (1000 * 3600 * 24)));
-        const nightlyRate = prop.nightlyRateDefault || 100;
+        const nightlyRate = prop.nightlyRateDefault || 120;
         const totalPaid = diffDays * nightlyRate;
 
         const newRes: Reservation = {
@@ -977,13 +785,12 @@ app.post('/api/ical/sync', async (req, res) => {
           syncedAt: new Date().toISOString()
         };
 
-        reservations.unshift(newRes);
+        store.reservations.unshift(newRes);
         createdCount++;
 
-        // Automatically create cleaning task for check-out
-        const existingCleaning = cleaningTasks.find(t => t.reservationId === newRes.id || (t.propertyId === prop.id && t.scheduledDate === newRes.checkOut));
+        const existingCleaning = store.cleaningTasks.find(t => t.reservationId === newRes.id || (t.propertyId === prop.id && t.scheduledDate === newRes.checkOut));
         if (!existingCleaning) {
-          cleaningTasks.unshift({
+          store.cleaningTasks.unshift({
             id: `clean-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
             reservationId: newRes.id,
             propertyId: prop.id,
@@ -1010,10 +817,10 @@ app.post('/api/ical/sync', async (req, res) => {
       reservationsFound: events.length,
       reservationsCreated: createdCount,
       reservationsUpdated: updatedCount,
-      message: `Sincronización exitosa: ${createdCount} reservas nuevas creadas, ${updatedCount} existentes verificadas.`
+      message: `Sincronización exitosa: ${createdCount} reservas nuevas cargadas (${events.length} eventos en calendario).`
     };
 
-    syncLogs.unshift(log);
+    store.syncLogs.unshift(log);
 
     res.json({
       success: true,
@@ -1031,16 +838,59 @@ app.post('/api/ical/sync', async (req, res) => {
 
 // Sync all properties
 app.post('/api/ical/sync-all', async (req, res) => {
+  const store = getStoreForReq(req);
   let totalCreated = 0;
   const logs: SyncLog[] = [];
+  const currentTodayStr = getTodayStr();
 
-  for (const prop of properties) {
-    const rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
+  for (const prop of store.properties) {
+    let rawIcs = '';
+    const targetUrl = prop.icalUrl;
+
+    if (targetUrl && targetUrl.trim()) {
+      if (targetUrl.includes('/api/ical/sample/')) {
+        rawIcs = generateSampleICalFeed(prop.name, prop.platformDefault);
+      } else {
+        try {
+          const fetchRes = await fetch(targetUrl);
+          if (fetchRes.ok) {
+            rawIcs = await fetchRes.text();
+          }
+        } catch {
+          // Skip if fetch fails during mass sync
+        }
+      }
+    }
+
+    if (!rawIcs) {
+      logs.push({
+        id: `log-${Date.now()}-${prop.id}`,
+        propertyId: prop.id,
+        propertyName: prop.name,
+        syncedAt: new Date().toISOString(),
+        status: 'success',
+        reservationsFound: 0,
+        reservationsCreated: 0,
+        reservationsUpdated: 0,
+        message: `Sin enlace iCal activo para ${prop.name}.`
+      });
+      continue;
+    }
+
     const events = parseICalString(rawIcs);
     let created = 0;
+    let updated = 0;
 
     for (const event of events) {
-      const existing = reservations.find(r => r.externalId === event.uid);
+      if (event.checkOut < currentTodayStr) {
+        continue;
+      }
+
+      const existing = store.reservations.find(r => 
+        (r.externalId && r.externalId === event.uid) ||
+        (r.propertyId === prop.id && r.checkIn === event.checkIn && r.checkOut === event.checkOut)
+      );
+
       if (!existing) {
         const dIn = new Date(event.checkIn);
         const dOut = new Date(event.checkOut);
@@ -1062,32 +912,37 @@ app.post('/api/ical/sync-all', async (req, res) => {
           netAmount: totalPaid - prop.cleaningCost,
           status: 'active',
           externalId: event.uid,
-          notes: `Sincronización masiva iCal`,
+          notes: event.description || `Sincronización masiva iCal`,
           payoutStatus: 'pending',
           createdVia: 'ical',
           syncedAt: new Date().toISOString()
         };
 
-        reservations.unshift(newRes);
+        store.reservations.unshift(newRes);
         created++;
         totalCreated++;
 
-        cleaningTasks.unshift({
-          id: `clean-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-          reservationId: newRes.id,
-          propertyId: prop.id,
-          propertyName: prop.name,
-          propertyGroup: prop.group,
-          scheduledDate: newRes.checkOut,
-          status: 'pending',
-          assignedCleaner: 'Por Asignar',
-          cost: prop.cleaningCost,
-          notes: `Limpieza iCal tras check-out de ${event.guestName}`
-        });
+        const existingCleaning = store.cleaningTasks.find(t => t.reservationId === newRes.id || (t.propertyId === prop.id && t.scheduledDate === newRes.checkOut));
+        if (!existingCleaning) {
+          store.cleaningTasks.unshift({
+            id: `clean-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            reservationId: newRes.id,
+            propertyId: prop.id,
+            propertyName: prop.name,
+            propertyGroup: prop.group,
+            scheduledDate: newRes.checkOut,
+            status: 'pending',
+            assignedCleaner: 'Por Asignar',
+            cost: prop.cleaningCost,
+            notes: `Limpieza iCal tras check-out de ${event.guestName}`
+          });
+        }
+      } else {
+        updated++;
       }
     }
 
-    logs.push({
+    const log: SyncLog = {
       id: `log-${Date.now()}-${prop.id}`,
       propertyId: prop.id,
       propertyName: prop.name,
@@ -1095,18 +950,31 @@ app.post('/api/ical/sync-all', async (req, res) => {
       status: 'success',
       reservationsFound: events.length,
       reservationsCreated: created,
-      reservationsUpdated: events.length - created,
-      message: `Sync completado para ${prop.name}`
-    });
+      reservationsUpdated: updated,
+      message: `${prop.name}: ${created} creadas, ${updated} omitidas/existentes.`
+    };
+    logs.push(log);
+    store.syncLogs.unshift(log);
   }
 
-  res.json({ success: true, totalCreated, logs });
+  res.json({
+    success: true,
+    totalCreated,
+    logs,
+    message: `Sincronización masiva completada: ${totalCreated} reservas nuevas importadas.`
+  });
 });
 
 // Seed / Reset data
 app.post('/api/seed/reset', (req, res) => {
-  // Re-initialize with original defaults
-  res.json({ success: true, message: 'Base de datos de prueba restablecida con éxito' });
+  const store = getStoreForReq(req);
+  store.owners = [];
+  store.properties = [];
+  store.reservations = [];
+  store.cleaningTasks = [];
+  store.customGroups = ['Unidades Individuales'];
+  store.syncLogs = [];
+  res.json({ success: true, message: 'Datos borrados con éxito' });
 });
 
 // VITE MIDDLEWARE SETUP
