@@ -876,7 +876,10 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
                   return (
                     <div 
                       key={mName}
-                      onClick={() => setTimeFrame('month')}
+                      onClick={() => {
+                        setMonthRefDate(new Date(selectedYear, monthIdx, 1));
+                        setTimeFrame('month');
+                      }}
                       className="p-4 bg-[#FAFAF8] rounded-2xl border border-black/5 hover:border-black/20 hover:bg-white transition-all cursor-pointer space-y-3"
                     >
                       <div className="flex items-center justify-between border-b border-black/5 pb-2">
