@@ -21,6 +21,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'july2026' | 'all'>('current');
 
   // Form states for Add / Edit
   const [name, setName] = useState('');
@@ -87,20 +88,35 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#2D2D2D] tracking-tight">
-            Gestión de Propietarios y Comisiones
+            Gestión de Propietarios y Liquidaciones
           </h1>
           <p className="text-xs text-black/50 mt-0.5">
-            Configuración de tarifas de administración, cuentas de liquidación y cartera de inmuebles.
+            Cálculo transparente de ingresos brutos, deducción de limpieza y comisión de gestión.
           </p>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="btn-primary text-xs shadow-xs cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Registrar Propietario</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-1.5 text-xs bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-1.5">
+            <span className="text-black/50 font-medium">Periodo:</span>
+            <select
+              value={selectedPeriod}
+              onChange={(e: any) => setSelectedPeriod(e.target.value)}
+              className="bg-transparent font-bold text-[#2D2D2D] focus:outline-none cursor-pointer"
+            >
+              <option value="current">Mes Actual (Agosto 2026)</option>
+              <option value="july2026">Julio 2026</option>
+              <option value="all">Todas las Reservas</option>
+            </select>
+          </div>
+
+          <button
+            onClick={openAddModal}
+            className="btn-primary text-xs shadow-xs cursor-pointer self-start sm:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Registrar Propietario</span>
+          </button>
+        </div>
       </div>
 
       {/* Owners Cards */}
@@ -108,12 +124,29 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
         {owners.map((owner) => {
           const ownerProps = properties.filter(p => p.ownerId === owner.id || p.ownerName === owner.name);
           const propIds = ownerProps.map(p => p.id);
-          const ownerReservations = reservations.filter(r => propIds.includes(r.propertyId));
 
+          const ownerReservations = reservations.filter(r => {
+            if (!propIds.includes(r.propertyId)) return false;
+            if (selectedPeriod === 'current') {
+              return r.checkIn.startsWith('2026-08') || r.checkOut.startsWith('2026-08');
+            }
+            if (selectedPeriod === 'july2026') {
+              return r.checkIn.startsWith('2026-07') || r.checkOut.startsWith('2026-07');
+            }
+            return true;
+          });
+
+          // Step-by-step formula calculation:
+          // 1. Ingresos Brutos
           const grossIncome = ownerReservations.reduce((sum, r) => sum + r.totalPaid, 0);
+          // 2. Gastos de Limpieza
           const cleaningCosts = ownerReservations.reduce((sum, r) => sum + r.cleaningCost, 0);
-          const managementFee = (grossIncome - cleaningCosts) * (owner.commissionRate / 100);
-          const netPayout = grossIncome - cleaningCosts - managementFee;
+          // 3. Subtotal tras Limpieza
+          const subtotalAfterCleaning = Math.max(0, grossIncome - cleaningCosts);
+          // 4. Comisión de Gestión (porcentaje configurado)
+          const managementFee = subtotalAfterCleaning * (owner.commissionRate / 100);
+          // 5. Pago Neto al Propietario
+          const netPayout = subtotalAfterCleaning - managementFee;
 
           return (
             <div key={owner.id} className="rm-card p-4 sm:p-5 space-y-4 flex flex-col justify-between">
@@ -167,19 +200,31 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
                   </div>
                 </div>
 
-                {/* Financial Summary Box */}
-                <div className="p-3 bg-[#FAFAF8] rounded-xl border border-black/5 text-xs space-y-1.5">
-                  <div className="flex justify-between text-black/60">
-                    <span>Ingresos Brutos:</span>
-                    <span className="font-semibold text-[#2D2D2D]">${grossIncome.toLocaleString()}</span>
+                {/* Financial Summary Box (Step-by-step transparent formula) */}
+                <div className="p-3 bg-[#FAFAF8] rounded-xl border border-black/10 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-black/70">
+                    <span className="font-medium">1. Ingresos Brutos:</span>
+                    <span className="font-bold text-[#2D2D2D]">${grossIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between text-black/60">
-                    <span>Comisión SGR ({owner.commissionRate}%):</span>
-                    <span className="font-semibold text-purple-700">-${managementFee.toFixed(2)}</span>
+
+                  <div className="flex justify-between items-center text-black/70">
+                    <span className="font-medium">2. (-) Costo Limpieza:</span>
+                    <span className="font-semibold text-rose-600">-${cleaningCosts.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between pt-1 border-t border-black/5 font-bold text-[#2D2D2D]">
-                    <span>A Pagar a Propietario:</span>
-                    <span className="text-emerald-700 text-sm">${netPayout.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+
+                  <div className="flex justify-between items-center text-black/50 text-[11px] pt-1 border-t border-black/5">
+                    <span>Subtotal tras Limpieza:</span>
+                    <span className="font-semibold text-[#2D2D2D]">${subtotalAfterCleaning.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-black/70">
+                    <span className="font-medium">3. (-) Comisión ({owner.commissionRate}%):</span>
+                    <span className="font-semibold text-purple-700">-${managementFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-black/10 font-bold text-[#2D2D2D]">
+                    <span className="text-xs">4. Pago Neto Propietario:</span>
+                    <span className="text-emerald-700 text-sm font-bold">${netPayout.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>

@@ -34,21 +34,473 @@ interface UserStore {
   syncLogs: SyncLog[];
 }
 
+function createInitialSampleStore(): UserStore {
+  const t = getTodayStr(); // e.g. "2026-08-03"
+
+  const owners: Owner[] = [
+    {
+      id: 'owner-1',
+      name: 'Carlos Alarcón',
+      email: 'carlos@alarconproperties.com',
+      phone: '+52 555 234 5678',
+      commissionRate: 15,
+      payoutMethod: 'Transferencia Bancaria'
+    },
+    {
+      id: 'owner-2',
+      name: 'Sofía Mendoza',
+      email: 'sofia.mendoza@gmail.com',
+      phone: '+52 555 876 5432',
+      commissionRate: 12,
+      payoutMethod: 'Transferencia SPEI'
+    },
+    {
+      id: 'owner-3',
+      name: 'Roberto Sterling',
+      email: 'r.sterling@luxuryrentals.mx',
+      phone: '+52 555 999 1122',
+      commissionRate: 20,
+      payoutMethod: 'Depósito Directo'
+    }
+  ];
+
+  const customGroups = ['Complejo Marina Bay', 'Residencial Beachfront', 'Cabañas del Valle', 'Unidades Individuales'];
+
+  const properties: Property[] = [
+    {
+      id: 'prop-1',
+      name: 'Villa Paraíso 101',
+      group: 'Complejo Marina Bay',
+      ownerId: 'owner-1',
+      ownerName: 'Carlos Alarcón',
+      ownerEmail: 'carlos@alarconproperties.com',
+      ownerPhone: '+52 555 234 5678',
+      cleaningCost: 60,
+      nightlyRateDefault: 180,
+      capacity: 6,
+      bedrooms: 3,
+      bathrooms: 2,
+      platformDefault: 'Airbnb',
+      address: 'Av. Marina 101, Cancún',
+      active: true,
+      notes: 'Vista al mar, alberca compartida y estacionamiento privado.',
+      icalUrl: 'https://www.airbnb.com/calendar/ical/sample-101.ics'
+    },
+    {
+      id: 'prop-2',
+      name: 'Penthouse Loft Marina 402',
+      group: 'Complejo Marina Bay',
+      ownerId: 'owner-1',
+      ownerName: 'Carlos Alarcón',
+      ownerEmail: 'carlos@alarconproperties.com',
+      ownerPhone: '+52 555 234 5678',
+      cleaningCost: 85,
+      nightlyRateDefault: 250,
+      capacity: 4,
+      bedrooms: 2,
+      bathrooms: 2.5,
+      platformDefault: 'Booking',
+      address: 'Av. Marina 402, Cancún',
+      active: true,
+      notes: 'Penthouse de lujo con jacuzzi privado en terraza.',
+      icalUrl: 'https://www.booking.com/ical/sample-402.ics'
+    },
+    {
+      id: 'prop-3',
+      name: 'Sunset Beach Condo 3B',
+      group: 'Residencial Beachfront',
+      ownerId: 'owner-2',
+      ownerName: 'Sofía Mendoza',
+      ownerEmail: 'sofia.mendoza@gmail.com',
+      ownerPhone: '+52 555 876 5432',
+      cleaningCost: 50,
+      nightlyRateDefault: 140,
+      capacity: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      platformDefault: 'Airbnb',
+      address: 'Calle Del Mar 45, Playa del Carmen',
+      active: true,
+      notes: 'A 200m de la playa, balcón amueblado y wifi de alta velocidad.',
+      icalUrl: 'https://www.airbnb.com/calendar/ical/sample-3b.ics'
+    },
+    {
+      id: 'prop-4',
+      name: 'Cabaña Valle del Sol',
+      group: 'Cabañas del Valle',
+      ownerId: 'owner-2',
+      ownerName: 'Sofía Mendoza',
+      ownerEmail: 'sofia.mendoza@gmail.com',
+      ownerPhone: '+52 555 876 5432',
+      cleaningCost: 40,
+      nightlyRateDefault: 110,
+      capacity: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      platformDefault: 'Vrbo',
+      address: 'Camino al Valle Km 4, Valle de Bravo',
+      active: true,
+      notes: 'Cabaña rústica con chimenea y fogatero exterior.',
+      icalUrl: 'https://www.vrbo.com/ical/sample-valle.ics'
+    },
+    {
+      id: 'prop-5',
+      name: 'Casa Real - Centro Histórico',
+      group: 'Unidades Individuales',
+      ownerId: 'owner-3',
+      ownerName: 'Roberto Sterling',
+      ownerEmail: 'r.sterling@luxuryrentals.mx',
+      ownerPhone: '+52 555 999 1122',
+      cleaningCost: 100,
+      nightlyRateDefault: 320,
+      capacity: 8,
+      bedrooms: 4,
+      bathrooms: 4,
+      platformDefault: 'Direct',
+      address: 'Calle Hidalgo 12, San Miguel de Allende',
+      active: true,
+      notes: 'Casona colonial restaurada con patio central y fuentes.',
+      icalUrl: ''
+    }
+  ];
+
+  const reservations: Reservation[] = [
+    // Current active reservations
+    {
+      id: 'res-sample-1',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      propertyGroup: 'Complejo Marina Bay',
+      guestName: 'Mateo Rossi',
+      guestPhone: '+52 555 111 2233',
+      guestEmail: 'mateo.rossi@example.com',
+      platform: 'Airbnb',
+      checkIn: addDays(t, -2),
+      checkOut: addDays(t, 3),
+      totalPaid: 900,
+      cleaningCost: 60,
+      netAmount: 840,
+      status: 'active',
+      payoutStatus: 'paid',
+      externalId: 'HM-89214',
+      notes: 'Solicitó cuna para bebé.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-2',
+      propertyId: 'prop-2',
+      propertyName: 'Penthouse Loft Marina 402',
+      propertyGroup: 'Complejo Marina Bay',
+      guestName: 'Camila Silva',
+      guestPhone: '+52 555 333 4455',
+      guestEmail: 'camila.silva@example.com',
+      platform: 'Booking',
+      checkIn: t,
+      checkOut: addDays(t, 4),
+      totalPaid: 1250,
+      cleaningCost: 85,
+      netAmount: 1165,
+      status: 'active',
+      payoutStatus: 'pending',
+      externalId: 'BK-99302',
+      notes: 'Llegada tarde alrededor de las 8:00 PM.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-3',
+      propertyId: 'prop-3',
+      propertyName: 'Sunset Beach Condo 3B',
+      propertyGroup: 'Residencial Beachfront',
+      guestName: 'Diego Torres',
+      guestPhone: '+52 555 444 5566',
+      guestEmail: 'diego.torres@example.com',
+      platform: 'Airbnb',
+      checkIn: addDays(t, 2),
+      checkOut: addDays(t, 6),
+      totalPaid: 700,
+      cleaningCost: 50,
+      netAmount: 650,
+      status: 'active',
+      payoutStatus: 'pending',
+      externalId: 'HM-10492',
+      notes: 'Reserva confirmada vía Airbnb.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-4',
+      propertyId: 'prop-4',
+      propertyName: 'Cabaña Valle del Sol',
+      propertyGroup: 'Cabañas del Valle',
+      guestName: 'Ana María López',
+      guestPhone: '+52 555 666 7788',
+      guestEmail: 'am.lopez@example.com',
+      platform: 'Vrbo',
+      checkIn: addDays(t, -5),
+      checkOut: t,
+      totalPaid: 550,
+      cleaningCost: 40,
+      netAmount: 510,
+      status: 'active',
+      payoutStatus: 'paid',
+      externalId: 'VB-44012',
+      notes: 'Check-out hoy a las 11:00 AM.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-5',
+      propertyId: 'prop-5',
+      propertyName: 'Casa Real - Centro Histórico',
+      propertyGroup: 'Unidades Individuales',
+      guestName: 'John Smith',
+      guestPhone: '+1 305 555 0192',
+      guestEmail: 'john.smith@example.com',
+      platform: 'Direct',
+      checkIn: addDays(t, 7),
+      checkOut: addDays(t, 12),
+      totalPaid: 1600,
+      cleaningCost: 100,
+      netAmount: 1500,
+      status: 'active',
+      payoutStatus: 'paid',
+      externalId: 'DIR-88120',
+      notes: 'Pago completo por transferencia directa.',
+      createdVia: 'manual'
+    },
+    {
+      id: 'res-sample-6',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      propertyGroup: 'Complejo Marina Bay',
+      guestName: 'Valeria Gómez',
+      guestPhone: '+52 555 777 8899',
+      guestEmail: 'valeria.g@example.com',
+      platform: 'Airbnb',
+      checkIn: addDays(t, 14),
+      checkOut: addDays(t, 18),
+      totalPaid: 720,
+      cleaningCost: 60,
+      netAmount: 660,
+      status: 'active',
+      payoutStatus: 'pending',
+      externalId: 'HM-11029',
+      notes: 'Viaje de aniversario.',
+      createdVia: 'ical'
+    },
+    // Past Month
+    {
+      id: 'res-sample-7',
+      propertyId: 'prop-2',
+      propertyName: 'Penthouse Loft Marina 402',
+      propertyGroup: 'Complejo Marina Bay',
+      guestName: 'Lucas Fernández',
+      guestPhone: '+52 555 888 9900',
+      guestEmail: 'lucas.f@example.com',
+      platform: 'Booking',
+      checkIn: '2026-07-10',
+      checkOut: '2026-07-15',
+      totalPaid: 1250,
+      cleaningCost: 85,
+      netAmount: 1165,
+      status: 'completed',
+      payoutStatus: 'paid',
+      externalId: 'BK-77201',
+      notes: 'Estancia excelente.',
+      createdVia: 'manual'
+    },
+    {
+      id: 'res-sample-8',
+      propertyId: 'prop-3',
+      propertyName: 'Sunset Beach Condo 3B',
+      propertyGroup: 'Residencial Beachfront',
+      guestName: 'Isabella Rossi',
+      guestPhone: '+52 555 222 3344',
+      guestEmail: 'isabella.r@example.com',
+      platform: 'Airbnb',
+      checkIn: '2026-07-20',
+      checkOut: '2026-07-25',
+      totalPaid: 700,
+      cleaningCost: 50,
+      netAmount: 650,
+      status: 'completed',
+      payoutStatus: 'paid',
+      externalId: 'HM-66301',
+      notes: 'Evaluación de 5 estrellas en Airbnb.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-9',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      propertyGroup: 'Complejo Marina Bay',
+      guestName: 'Gabriel Morales',
+      guestPhone: '+52 555 999 0011',
+      guestEmail: 'gabriel.m@example.com',
+      platform: 'Airbnb',
+      checkIn: '2026-07-27',
+      checkOut: '2026-08-01',
+      totalPaid: 900,
+      cleaningCost: 60,
+      netAmount: 840,
+      status: 'completed',
+      payoutStatus: 'paid',
+      externalId: 'HM-55102',
+      notes: 'Check-out a tiempo.',
+      createdVia: 'ical'
+    },
+    // Future Month
+    {
+      id: 'res-sample-10',
+      propertyId: 'prop-5',
+      propertyName: 'Casa Real - Centro Histórico',
+      propertyGroup: 'Unidades Individuales',
+      guestName: 'Elena Beltrán',
+      guestPhone: '+52 555 444 3322',
+      guestEmail: 'elena.b@example.com',
+      platform: 'Airbnb',
+      checkIn: '2026-09-05',
+      checkOut: '2026-09-10',
+      totalPaid: 1600,
+      cleaningCost: 100,
+      netAmount: 1500,
+      status: 'active',
+      payoutStatus: 'pending',
+      externalId: 'HM-99881',
+      notes: 'Reserva anticipada.',
+      createdVia: 'ical'
+    },
+    {
+      id: 'res-sample-11',
+      propertyId: 'prop-4',
+      propertyName: 'Cabaña Valle del Sol',
+      propertyGroup: 'Cabañas del Valle',
+      guestName: 'Santiago Rivas',
+      guestPhone: '+52 555 111 9988',
+      guestEmail: 'santiago.r@example.com',
+      platform: 'Vrbo',
+      checkIn: '2026-09-12',
+      checkOut: '2026-09-16',
+      totalPaid: 440,
+      cleaningCost: 40,
+      netAmount: 400,
+      status: 'active',
+      payoutStatus: 'pending',
+      externalId: 'VB-33210',
+      notes: 'Reserva de fin de semana.',
+      createdVia: 'ical'
+    }
+  ];
+
+  const cleaningTasks: CleaningTask[] = [
+    {
+      id: 'clean-sample-1',
+      reservationId: 'res-sample-4',
+      propertyId: 'prop-4',
+      propertyName: 'Cabaña Valle del Sol',
+      propertyGroup: 'Cabañas del Valle',
+      scheduledDate: t,
+      status: 'in_progress',
+      assignedCleaner: 'Juana Pérez',
+      cost: 40,
+      notes: 'Limpieza tras salida hoy de Ana María López. Limpiar chimenea.'
+    },
+    {
+      id: 'clean-sample-2',
+      reservationId: 'res-sample-1',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      propertyGroup: 'Complejo Marina Bay',
+      scheduledDate: addDays(t, 3),
+      status: 'pending',
+      assignedCleaner: 'María Delgado',
+      cost: 60,
+      notes: 'Limpieza completa tras salida de Mateo Rossi. Cambio de ropa de cama.'
+    },
+    {
+      id: 'clean-sample-3',
+      reservationId: 'res-sample-2',
+      propertyId: 'prop-2',
+      propertyName: 'Penthouse Loft Marina 402',
+      propertyGroup: 'Complejo Marina Bay',
+      scheduledDate: addDays(t, 4),
+      status: 'pending',
+      assignedCleaner: 'Pedro Gómez',
+      cost: 85,
+      notes: 'Limpieza de penthouse y reposición de toallas para jacuzzi.'
+    },
+    {
+      id: 'clean-sample-4',
+      reservationId: 'res-sample-9',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      propertyGroup: 'Complejo Marina Bay',
+      scheduledDate: '2026-08-01',
+      status: 'completed',
+      assignedCleaner: 'María Delgado',
+      cost: 60,
+      notes: 'Limpieza impecable completada.'
+    },
+    {
+      id: 'clean-sample-5',
+      reservationId: 'res-sample-8',
+      propertyId: 'prop-3',
+      propertyName: 'Sunset Beach Condo 3B',
+      propertyGroup: 'Residencial Beachfront',
+      scheduledDate: '2026-07-25',
+      status: 'completed',
+      assignedCleaner: 'Juana Pérez',
+      cost: 50,
+      notes: 'Limpieza periódica y desinfección realizada.'
+    }
+  ];
+
+  const syncLogs: SyncLog[] = [
+    {
+      id: 'log-sample-1',
+      propertyId: 'prop-1',
+      propertyName: 'Villa Paraíso 101',
+      syncedAt: new Date(Date.now() - 3600000).toISOString(),
+      status: 'success',
+      reservationsFound: 4,
+      reservationsCreated: 1,
+      reservationsUpdated: 3,
+      message: 'Sincronización automatizada iCal completada con éxito.'
+    },
+    {
+      id: 'log-sample-2',
+      propertyId: 'prop-2',
+      propertyName: 'Penthouse Loft Marina 402',
+      syncedAt: new Date(Date.now() - 7200000).toISOString(),
+      status: 'success',
+      reservationsFound: 3,
+      reservationsCreated: 0,
+      reservationsUpdated: 3,
+      message: 'iCal sincronizado correctamente.'
+    }
+  ];
+
+  return {
+    owners,
+    properties,
+    reservations,
+    cleaningTasks,
+    customGroups,
+    syncLogs
+  };
+}
+
 const userStores = new Map<string, UserStore>();
 
 function getStoreForReq(req: express.Request): UserStore {
   const emailHeader = (req.headers['x-user-email'] as string) || (req.query?.userEmail as string) || '';
   const key = emailHeader.trim().toLowerCase() || 'default';
-  
+
   if (!userStores.has(key)) {
-    userStores.set(key, {
-      owners: [],
-      properties: [],
-      reservations: [],
-      cleaningTasks: [],
-      customGroups: ['Unidades Individuales'],
-      syncLogs: []
-    });
+    userStores.set(key, createInitialSampleStore());
+  } else {
+    const existing = userStores.get(key)!;
+    if (existing.properties.length === 0 && existing.reservations.length === 0) {
+      userStores.set(key, createInitialSampleStore());
+    }
   }
   return userStores.get(key)!;
 }
@@ -966,6 +1418,14 @@ app.post('/api/ical/sync-all', async (req, res) => {
 });
 
 // Seed / Reset data
+app.post('/api/seed/load', (req, res) => {
+  const emailHeader = (req.headers['x-user-email'] as string) || (req.query?.userEmail as string) || '';
+  const key = emailHeader.trim().toLowerCase() || 'default';
+  const sampleStore = createInitialSampleStore();
+  userStores.set(key, sampleStore);
+  res.json({ success: true, message: 'Datos de prueba cargados con éxito' });
+});
+
 app.post('/api/seed/reset', (req, res) => {
   const store = getStoreForReq(req);
   store.owners = [];

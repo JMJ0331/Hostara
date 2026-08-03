@@ -8,7 +8,9 @@ import {
   TrendingUp, 
   Sparkles, 
   Building2,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import type { Property, Reservation, Owner } from '../types';
 
@@ -23,16 +25,57 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   reservations,
   owners
 }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'july2026' | 'active'>('all');
+  const [monthFilter, setMonthFilter] = useState<string>('2026-08');
 
-  const filteredReservations = selectedPeriod === 'active'
-    ? reservations.filter(r => r.status === 'active')
-    : reservations;
+  const filteredReservations = reservations.filter(r => {
+    // Month filter check
+    if (monthFilter !== 'all') {
+      const isCheckInMonth = r.checkIn.startsWith(monthFilter);
+      const isCheckOutMonth = r.checkOut.startsWith(monthFilter);
+      if (!isCheckInMonth && !isCheckOutMonth) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const handlePrevMonth = () => {
+    if (monthFilter === 'all') {
+      setMonthFilter('2026-08');
+      return;
+    }
+    const [y, m] = monthFilter.split('-').map(Number);
+    const date = new Date(y, m - 1 - 1, 1);
+    const newY = date.getFullYear();
+    const newM = String(date.getMonth() + 1).padStart(2, '0');
+    setMonthFilter(`${newY}-${newM}`);
+  };
+
+  const handleNextMonth = () => {
+    if (monthFilter === 'all') {
+      setMonthFilter('2026-08');
+      return;
+    }
+    const [y, m] = monthFilter.split('-').map(Number);
+    const date = new Date(y, m - 1 + 1, 1);
+    const newY = date.getFullYear();
+    const newM = String(date.getMonth() + 1).padStart(2, '0');
+    setMonthFilter(`${newY}-${newM}`);
+  };
+
+  const getMonthLabel = (yearMonth: string) => {
+    if (yearMonth === 'all') return 'Todos los Meses (Histórico)';
+    const [y, m] = yearMonth.split('-').map(Number);
+    const date = new Date(y, m - 1, 1);
+    const formatted = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  };
 
   // Calculate overall metrics
   const totalGrossIncome = filteredReservations.reduce((sum, r) => sum + r.totalPaid, 0);
   const totalCleaningCosts = filteredReservations.reduce((sum, r) => sum + r.cleaningCost, 0);
-  const netRevenueAfterCleaning = totalGrossIncome - totalCleaningCosts;
+  const netRevenueAfterCleaning = Math.max(0, totalGrossIncome - totalCleaningCosts);
   const estimatedManagementCommission = netRevenueAfterCleaning * 0.15;
   const totalOwnerPayouts = netRevenueAfterCleaning - estimatedManagementCommission;
 
@@ -54,8 +97,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     const owner = owners.find(o => o.id === prop.ownerId || o.name === prop.ownerName);
     const commissionRate = owner ? owner.commissionRate : 15;
     
-    const managementFee = (gross - cleaning) * (commissionRate / 100);
-    const ownerPayout = gross - cleaning - managementFee;
+    const subtotalAfterCleaning = Math.max(0, gross - cleaning);
+    const managementFee = subtotalAfterCleaning * (commissionRate / 100);
+    const ownerPayout = subtotalAfterCleaning - managementFee;
 
     return {
       propertyId: prop.id,
@@ -66,13 +110,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       totalNights,
       gross,
       cleaning,
+      subtotalAfterCleaning,
       managementFee,
       ownerPayout
     };
   });
 
   const exportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,Propiedad,Complejo,Propietario,Reservas,Noches,Ingreso Bruto,Limpieza,Comisión SGR,Pago Neto\n";
+    let csvContent = "data:text/csv;charset=utf-8,Propiedad,Complejo,Propietario,Reservas,Noches,Ingreso Bruto,Limpieza,Comisión Gestor,Pago Neto\n";
     propertyReports.forEach((row) => {
       csvContent += `"${row.propertyName}","${row.propertyGroup}","${row.ownerName}",${row.bookingsCount},${row.totalNights},${row.gross},${row.cleaning},${row.managementFee.toFixed(2)},${row.ownerPayout.toFixed(2)}\n`;
     });
@@ -160,27 +205,75 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       </div>
 
       {/* Property Breakdown Table */}
-      <div className="rm-card p-5 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-black/5">
-          <div>
-            <h3 className="font-bold text-base text-[#2D2D2D]">
+      <div className="rm-card p-4 sm:p-5 space-y-4">
+        {/* Responsive Header & Filter Section */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-black/10">
+          <div className="space-y-1">
+            <h3 className="font-bold text-base sm:text-lg text-[#2D2D2D]">
               Estado de Cuenta por Propiedad
             </h3>
-            <p className="text-xs text-black/50">
+            <p className="text-xs text-black/50 leading-relaxed">
               Desglose detallado por unidad para informes a propietarios.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs shrink-0">
-            <span className="text-black/50 hidden sm:inline">Periodo:</span>
-            <select
-              value={selectedPeriod}
-              onChange={(e: any) => setSelectedPeriod(e.target.value)}
-              className="bg-[#FAFAF8] border border-black/10 rounded-lg px-2.5 py-1 text-xs font-medium text-[#2D2D2D] hover:border-black/20 focus:outline-none focus:border-black/30 transition-all cursor-pointer truncate max-w-[150px] sm:max-w-none"
-            >
-              <option value="all">Todas las Reservas</option>
-              <option value="active">Solo Reservas Activas</option>
-            </select>
+          {/* Calendar Month & Year Selector Control */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs w-full sm:w-auto">
+            <div className="flex items-center justify-between gap-1 bg-[#FAFAF8] border border-black/15 rounded-xl p-1.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                title="Mes anterior"
+                className="p-1.5 hover:bg-black/5 rounded-lg text-black/70 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="relative flex items-center gap-2 px-2 py-1 hover:bg-black/5 rounded-lg transition-colors cursor-pointer group">
+                <Calendar className="w-4 h-4 text-purple-700 shrink-0" />
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] text-black/50 font-medium leading-none">Seleccionar Mes / Año</span>
+                  <span className="text-xs font-bold text-[#2D2D2D]">
+                    {getMonthLabel(monthFilter)}
+                  </span>
+                </div>
+                {/* Native Month Calendar Picker trigger overlay */}
+                <input
+                  type="month"
+                  value={monthFilter === 'all' ? '' : monthFilter}
+                  onChange={(e) => setMonthFilter(e.target.value ? e.target.value : 'all')}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                  title="Elegir mes y año en el calendario"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                title="Mes siguiente"
+                className="p-1.5 hover:bg-black/5 rounded-lg text-black/70 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {monthFilter !== 'all' ? (
+              <button
+                type="button"
+                onClick={() => setMonthFilter('all')}
+                className="text-[11px] font-semibold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200/60 px-3 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
+              >
+                Ver Histórico Completo
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMonthFilter('2026-08')}
+                className="text-[11px] font-semibold text-black/70 bg-black/5 hover:bg-black/10 px-3 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
+              >
+                Ir a Mes Actual
+              </button>
+            )}
           </div>
         </div>
 
@@ -195,7 +288,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 <th className="py-3 px-3 text-center">Reservas / Noches</th>
                 <th className="py-3 px-3 text-right">Ingreso Bruto</th>
                 <th className="py-3 px-3 text-right">Limpieza</th>
-                <th className="py-3 px-3 text-right">Comisión SGR</th>
+                <th className="py-3 px-3 text-right">Comisión Gestor</th>
                 <th className="py-3 px-3 text-right">Pago Neto</th>
               </tr>
             </thead>
@@ -217,13 +310,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     </span>
                   </td>
                   <td className="py-3 px-3 text-right font-semibold text-[#2D2D2D]">
-                    ${row.gross.toLocaleString()}
+                    ${row.gross.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="py-3 px-3 text-right text-rose-600 font-medium">
-                    -${row.cleaning.toLocaleString()}
+                    -${row.cleaning.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="py-3 px-3 text-right text-purple-700 font-medium">
-                    -${row.managementFee.toFixed(2)}
+                    -${row.managementFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-emerald-800 bg-emerald-50/50">
                     ${row.ownerPayout.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -237,18 +330,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {/* Mobile & Tablet Cards View */}
         <div className="lg:hidden divide-y divide-black/5">
           {propertyReports.map((row) => (
-            <div key={row.propertyId} className="p-4 space-y-3 hover:bg-[#FAFAF8] transition-colors">
-              <div className="flex items-start justify-between">
+            <div key={row.propertyId} className="p-3.5 sm:p-4 space-y-3 hover:bg-[#FAFAF8] transition-colors">
+              <div className="flex items-start justify-between gap-2">
                 <div>
                   <h4 className="font-bold text-sm text-[#2D2D2D]">{row.propertyName}</h4>
                   <p className="text-[11px] text-black/50">🏢 {row.propertyGroup}</p>
                 </div>
-                <span className="text-[11px] font-semibold text-black/60 bg-black/5 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-black/60 bg-black/5 px-2.5 py-1 rounded-lg shrink-0">
                   {row.ownerName}
                 </span>
               </div>
 
-              <div className="text-xs text-black/60 bg-[#FAFAF8] p-2 rounded-lg border border-black/5 flex justify-between">
+              <div className="text-xs text-black/60 bg-[#FAFAF8] p-2 rounded-lg border border-black/5 flex justify-between items-center">
                 <span>Ocupación:</span>
                 <span className="font-mono font-bold text-[#2D2D2D]">
                   {row.bookingsCount} reservas ({row.totalNights} noches)
@@ -257,19 +350,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                 <div>
-                  <span className="text-[10px] text-black/40 uppercase font-semibold block">Ingreso Bruto</span>
-                  <span className="font-bold text-[#2D2D2D]">${row.gross.toLocaleString()}</span>
+                  <span className="text-[10px] text-black/40 uppercase font-semibold block">1. Ingreso Bruto</span>
+                  <span className="font-bold text-[#2D2D2D]">${row.gross.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-black/40 uppercase font-semibold block">Gasto Limpieza</span>
-                  <span className="font-medium text-rose-600">-${row.cleaning.toLocaleString()}</span>
+                  <span className="text-[10px] text-black/40 uppercase font-semibold block">2. (-) Limpieza</span>
+                  <span className="font-medium text-rose-600">-${row.cleaning.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-black/40 uppercase font-semibold block">Comisión SGR</span>
-                  <span className="font-medium text-purple-700">-${row.managementFee.toFixed(2)}</span>
+                  <span className="text-[10px] text-black/40 uppercase font-semibold block">3. (-) Comisión</span>
+                  <span className="font-medium text-purple-700">-${row.managementFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
-                  <span className="text-[10px] text-emerald-800 uppercase font-bold block">Pago Neto Propietario</span>
+                <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                  <span className="text-[10px] text-emerald-800 uppercase font-bold block">4. Pago Neto</span>
                   <span className="font-bold text-emerald-800 text-sm">${row.ownerPayout.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
