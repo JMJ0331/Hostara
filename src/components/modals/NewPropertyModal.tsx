@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CalendarSync } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Owner, Platform, Property } from '../../types';
 
 interface NewPropertyModalProps {
@@ -204,24 +204,6 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
                 <option value="Vrbo">Vrbo</option>
               </select>
             </div>
-          </div>
-
-          {/* iCal Link Field */}
-          <div>
-            <label className="block font-semibold mb-1 text-purple-900 flex items-center gap-1.5">
-              <CalendarSync className="w-3.5 h-3.5 text-purple-700" />
-              <span>Enlace al calendario Airbnb (iCal):</span>
-            </label>
-            <input
-              type="url"
-              value={icalUrl}
-              onChange={(e) => setIcalUrl(e.target.value)}
-              placeholder="https://www.airbnb.com/calendar/ical/123456.ics?s=abcdef"
-              className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:ring-2 focus:ring-purple-300 focus:outline-none"
-            />
-            <p className="text-[10px] text-black/50 mt-1">
-              Al guardar con este enlace, se importarán automáticamente todas las reservas desde hoy en adelante.
-            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
