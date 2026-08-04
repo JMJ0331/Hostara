@@ -58,6 +58,23 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getPlatformBadgeClass = (platform: string) => {
+    const p = (platform || '').toLowerCase();
+    if (p.includes('airbnb')) {
+      return 'bg-[#FFF0F2] text-[#FF385C] border border-[#FFD0D6] font-bold';
+    }
+    if (p.includes('booking')) {
+      return 'bg-[#EAF1FB] text-[#003580] border border-[#B8D1F5] font-bold';
+    }
+    if (p.includes('vrbo')) {
+      return 'bg-[#EBF6FC] text-[#1174A6] border border-[#B5E0F7] font-bold';
+    }
+    if (p.includes('direct')) {
+      return 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold';
+    }
+    return 'bg-gray-100 text-gray-700 border border-gray-200 font-bold';
+  };
+
   return (
     <div className="space-y-6">
       
@@ -72,19 +89,19 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
             onClick={onOpenManageGroupsModal}
-            className="btn-secondary text-xs shadow-xs flex items-center gap-1.5"
+            className="btn-secondary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
           >
-            <Building2 className="w-4 h-4 text-[#2D2D2D]" />
+            <Building2 className="w-4 h-4 text-[#2D2D2D] shrink-0" />
             <span>Gestionar Complejos</span>
           </button>
           <button
             onClick={onOpenNewPropModal}
-            className="btn-primary text-xs shadow-xs"
+            className="btn-primary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 shrink-0" />
             <span>Añadir Propiedad</span>
           </button>
         </div>
@@ -156,7 +173,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
                         </p>
                       </div>
 
-                      <span className="status-badge badge-active text-[10px] shrink-0 whitespace-nowrap">
+                      <span className={`status-badge text-[10px] shrink-0 whitespace-nowrap ${getPlatformBadgeClass(prop.platformDefault)}`}>
                         {prop.platformDefault}
                       </span>
                     </div>

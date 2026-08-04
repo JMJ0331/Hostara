@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   Building2, 
   CalendarDays, 
-  Sparkles, 
   Users, 
   BarChart3,
   X,
@@ -11,6 +10,7 @@ import {
   User,
   Settings
 } from 'lucide-react';
+import { BroomIcon } from './icons/BroomIcon';
 
 export type ActiveTab = 'dashboard' | 'properties' | 'reservations' | 'cleaning' | 'owners' | 'reports';
 
@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'reservations' as ActiveTab,
-      label: 'Calendario e iCal',
+      label: 'Calendario',
       icon: CalendarDays,
       badge: activeBookingsCount > 0 ? activeBookingsCount : null,
       badgeBg: 'bg-[#D9D2F4] text-[#3B2A6B]'
@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'cleaning' as ActiveTab,
       label: 'Limpieza',
-      icon: Sparkles,
+      icon: BroomIcon,
       badge: pendingCleaningCount > 0 ? pendingCleaningCount : null,
       badgeBg: 'bg-[#D9E8D2] text-[#234E1D]'
     },

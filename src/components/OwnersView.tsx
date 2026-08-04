@@ -21,7 +21,6 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'july2026' | 'all'>('current');
 
   // Form states for Add / Edit
   const [name, setName] = useState('');
@@ -95,20 +94,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-1.5 text-xs bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-1.5">
-            <span className="text-black/50 font-medium">Periodo:</span>
-            <select
-              value={selectedPeriod}
-              onChange={(e: any) => setSelectedPeriod(e.target.value)}
-              className="bg-transparent font-bold text-[#2D2D2D] focus:outline-none cursor-pointer"
-            >
-              <option value="current">Mes Actual (Agosto 2026)</option>
-              <option value="july2026">Julio 2026</option>
-              <option value="all">Todas las Reservas</option>
-            </select>
-          </div>
-
+        <div className="flex items-center gap-2.5">
           <button
             onClick={openAddModal}
             className="btn-primary text-xs shadow-xs cursor-pointer self-start sm:self-auto"
@@ -125,16 +111,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
           const ownerProps = properties.filter(p => p.ownerId === owner.id || p.ownerName === owner.name);
           const propIds = ownerProps.map(p => p.id);
 
-          const ownerReservations = reservations.filter(r => {
-            if (!propIds.includes(r.propertyId)) return false;
-            if (selectedPeriod === 'current') {
-              return r.checkIn.startsWith('2026-08') || r.checkOut.startsWith('2026-08');
-            }
-            if (selectedPeriod === 'july2026') {
-              return r.checkIn.startsWith('2026-07') || r.checkOut.startsWith('2026-07');
-            }
-            return true;
-          });
+          const ownerReservations = reservations.filter(r => propIds.includes(r.propertyId));
 
           // Step-by-step formula calculation:
           // 1. Ingresos Brutos

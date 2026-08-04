@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
-import type { Property, CleaningTask } from '../../types';
+import { X } from 'lucide-react';
+import { BroomIcon } from '../icons/BroomIcon';
+import type { Property, CleaningTask, CleanerStaff } from '../../types';
 
 interface NewCleaningModalProps {
   isOpen: boolean;
   onClose: () => void;
   properties: Property[];
+  cleaners?: CleanerStaff[];
   onCreateCleaningTask: (taskData: Partial<CleaningTask>) => void;
 }
 
@@ -13,6 +15,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
   isOpen,
   onClose,
   properties,
+  cleaners = [],
   onCreateCleaningTask
 }) => {
   const todayStr = new Date().toISOString().split('T')[0];
@@ -58,7 +61,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
       <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <BroomIcon className="w-4 h-4 text-emerald-700" />
             <h2 className="font-bold text-base text-[#2D2D2D]">Programar Orden de Limpieza</h2>
           </div>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
@@ -98,14 +101,34 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div className="min-w-0">
               <label className="block font-semibold mb-1 truncate">Personal Limpieza:</label>
-              <input
-                type="text"
-                required
-                value={assignedCleaner}
-                onChange={(e) => setAssignedCleaner(e.target.value)}
-                placeholder="Ej: Juana Perez"
-                className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
-              />
+              {cleaners.length > 0 ? (
+                <select
+                  value={assignedCleaner}
+                  onChange={(e) => {
+                    const selName = e.target.value;
+                    setAssignedCleaner(selName);
+                    const found = cleaners.find(c => c.name === selName);
+                    if (found && found.phone) {
+                      setCleanerPhone(found.phone);
+                    }
+                  }}
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs font-medium text-[#2D2D2D]"
+                >
+                  {cleaners.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                  <option value="Otro">Otro / Personal Externo</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  required
+                  value={assignedCleaner}
+                  onChange={(e) => setAssignedCleaner(e.target.value)}
+                  placeholder="Ej: Juana Perez"
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-2.5 sm:px-3 py-2 text-xs text-[#2D2D2D]"
+                />
+              )}
             </div>
 
             <div className="min-w-0">

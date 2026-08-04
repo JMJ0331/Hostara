@@ -6,12 +6,12 @@ import {
   FileSpreadsheet, 
   DollarSign, 
   TrendingUp, 
-  Sparkles, 
   Building2,
   Calendar,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { BroomIcon } from './icons/BroomIcon';
 import type { Property, Reservation, Owner } from '../types';
 
 interface ReportsViewProps {
@@ -180,7 +180,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
 
         <div className="rm-card p-5">
-          <span className="text-xs font-semibold text-black/50 uppercase">Gastos de Limpieza (USD)</span>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-black/50 uppercase">
+            <BroomIcon className="w-3.5 h-3.5 text-rose-700" />
+            <span>Gastos de Limpieza (USD)</span>
+          </div>
           <div className="text-2xl font-bold text-rose-700 mt-1">
             -${totalCleaningCosts.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
           </div>

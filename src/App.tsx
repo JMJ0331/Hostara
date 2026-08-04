@@ -13,6 +13,7 @@ import { NewPropertyModal } from './components/modals/NewPropertyModal';
 import { NewCleaningModal } from './components/modals/NewCleaningModal';
 import { EditReservationModal } from './components/modals/EditReservationModal';
 import { ManageGroupsModal } from './components/modals/ManageGroupsModal';
+import { ManageCleanersModal } from './components/modals/ManageCleanersModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 import { AccountSettingsModal } from './components/modals/AccountSettingsModal';
 import { AuthView } from './components/AuthView';
@@ -22,6 +23,7 @@ import type {
   Reservation, 
   CleaningTask, 
   Owner, 
+  CleanerStaff,
   DashboardStats, 
   CleaningStatus 
 } from './types';
@@ -71,7 +73,32 @@ export default function App() {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [isNewCleaningModalOpen, setIsNewCleaningModalOpen] = useState<boolean>(false);
   const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState<boolean>(false);
+  const [isManageCleanersModalOpen, setIsManageCleanersModalOpen] = useState<boolean>(false);
   const [selectedReservationToEdit, setSelectedReservationToEdit] = useState<Reservation | null>(null);
+
+  // Cleaners state
+  const [cleaners, setCleaners] = useState<CleanerStaff[]>([
+    { id: '1', name: 'María Sánchez', phone: '+52 998 111 2233', notes: 'Turno Mañana - Zona Cancún Center', active: true },
+    { id: '2', name: 'Ana Martínez', phone: '+52 998 222 3344', notes: 'Turno Tarde - Unidades Complejo Rialto', active: true },
+    { id: '3', name: 'Rosa Gómez', phone: '+52 998 333 4455', notes: 'Atención especial fines de semana', active: true }
+  ]);
+
+  const handleAddCleaner = (cleanerData: Omit<CleanerStaff, 'id' | 'active'>) => {
+    const newCleaner: CleanerStaff = {
+      id: `cl-${Date.now()}`,
+      ...cleanerData,
+      active: true
+    };
+    setCleaners(prev => [...prev, newCleaner]);
+  };
+
+  const handleUpdateCleaner = (id: string, updatedData: Partial<CleanerStaff>) => {
+    setCleaners(prev => prev.map(c => c.id === id ? { ...c, ...updatedData } : c));
+  };
+
+  const handleDeleteCleaner = (id: string) => {
+    setCleaners(prev => prev.filter(c => c.id !== id));
+  };
 
   // Confirm modal popup state
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
@@ -460,6 +487,18 @@ export default function App() {
     });
   };
 
+  const requestDeleteCleaner = (id: string, name?: string) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Confirmar eliminación de personal',
+      message: '¿Estás seguro de que deseas eliminar a esta persona del equipo de limpieza?',
+      itemName: name ? `Personal: ${name}` : 'Personal de limpieza seleccionado',
+      confirmText: 'Sí, Eliminar',
+      subtitle: 'Esta acción no se puede deshacer',
+      onConfirm: () => handleDeleteCleaner(id)
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
@@ -564,6 +603,7 @@ export default function App() {
               cleaningTasks={filteredCleaningTasks}
               properties={properties}
               onOpenNewCleaningModal={() => setIsNewCleaningModalOpen(true)}
+              onOpenManageCleanersModal={() => setIsManageCleanersModalOpen(true)}
               onUpdateCleaningStatus={handleUpdateCleaningStatus}
               onDeleteCleaningTask={requestDeleteCleaningTask}
             />
@@ -626,7 +666,17 @@ export default function App() {
         isOpen={isNewCleaningModalOpen}
         onClose={() => setIsNewCleaningModalOpen(false)}
         properties={properties}
+        cleaners={cleaners}
         onCreateCleaningTask={handleCreateCleaningTask}
+      />
+
+      <ManageCleanersModal
+        isOpen={isManageCleanersModalOpen}
+        onClose={() => setIsManageCleanersModalOpen(false)}
+        cleaners={cleaners}
+        onAddCleaner={handleAddCleaner}
+        onUpdateCleaner={handleUpdateCleaner}
+        onRequestDeleteCleaner={requestDeleteCleaner}
       />
 
       <EditReservationModal

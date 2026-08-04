@@ -56,6 +56,14 @@ export interface Reservation {
   syncedAt?: string;
 }
 
+export interface CleanerStaff {
+  id: string;
+  name: string;
+  phone?: string;
+  notes?: string;
+  active?: boolean;
+}
+
 export interface CleaningTask {
   id: string;
   reservationId?: string;

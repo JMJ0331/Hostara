@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Sparkles, 
   Plus, 
   CheckCircle2, 
   Clock, 
@@ -15,12 +14,14 @@ import {
   Edit3,
   Trash2
 } from 'lucide-react';
+import { BroomIcon } from './icons/BroomIcon';
 import type { CleaningTask, CleaningStatus, Property } from '../types';
 
 interface CleaningViewProps {
   cleaningTasks: CleaningTask[];
   properties: Property[];
   onOpenNewCleaningModal: () => void;
+  onOpenManageCleanersModal?: () => void;
   onUpdateCleaningStatus: (id: string, status: CleaningStatus, cleanerName?: string) => void;
   onDeleteCleaningTask: (id: string, propertyName?: string) => void;
 }
@@ -29,6 +30,7 @@ export const CleaningView: React.FC<CleaningViewProps> = ({
   cleaningTasks,
   properties,
   onOpenNewCleaningModal,
+  onOpenManageCleanersModal,
   onUpdateCleaningStatus,
   onDeleteCleaningTask
 }) => {
@@ -83,20 +85,32 @@ Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#2D2D2D] tracking-tight flex items-center gap-2">
-            Control de Limpiezas y Operaciones
+            <BroomIcon className="w-6 h-6 text-[#2D2D2D] shrink-0" />
+            <span>Control de Limpiezas y Operaciones</span>
           </h1>
           <p className="text-xs text-black/50 mt-0.5">
             Asignación de personal de limpieza, envío de órdenes por WhatsApp y control de costos.
           </p>
         </div>
 
-        <button
-          onClick={onOpenNewCleaningModal}
-          className="btn-primary text-xs shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Programar Limpieza</span>
-        </button>
+        <div className="flex flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          {onOpenManageCleanersModal && (
+            <button
+              onClick={onOpenManageCleanersModal}
+              className="btn-secondary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
+            >
+              <UserCheck className="w-4 h-4 text-[#2D2D2D] shrink-0" />
+              <span>Gestionar Personal</span>
+            </button>
+          )}
+          <button
+            onClick={onOpenNewCleaningModal}
+            className="btn-primary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>Programar Limpieza</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Badges */}

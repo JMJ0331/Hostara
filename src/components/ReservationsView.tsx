@@ -106,15 +106,15 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
   const getPlatformBadge = (platform: Platform) => {
     switch (platform) {
       case 'Airbnb':
-        return <span className="status-badge bg-rose-100 text-rose-800 border border-rose-200">Airbnb</span>;
+        return <span className="status-badge bg-[#FFF0F2] text-[#FF385C] border border-[#FFD0D6] font-bold">Airbnb</span>;
       case 'Booking':
-        return <span className="status-badge bg-blue-100 text-blue-800 border border-blue-200">Booking.com</span>;
+        return <span className="status-badge bg-[#EAF1FB] text-[#003580] border border-[#B8D1F5] font-bold">Booking.com</span>;
       case 'Vrbo':
-        return <span className="status-badge bg-purple-100 text-purple-800 border border-purple-200">Vrbo</span>;
+        return <span className="status-badge bg-[#EBF6FC] text-[#1174A6] border border-[#B5E0F7] font-bold">Vrbo</span>;
       case 'Direct':
-        return <span className="status-badge bg-emerald-100 text-emerald-800 border border-emerald-200">Directa</span>;
+        return <span className="status-badge bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">Directa</span>;
       default:
-        return <span className="status-badge bg-gray-100 text-gray-800">Otra</span>;
+        return <span className="status-badge bg-gray-100 text-gray-700 border border-gray-200 font-bold">Otra</span>;
     }
   };
 
