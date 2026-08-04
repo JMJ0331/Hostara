@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Building2, Plus, Edit2, Trash2, Check } from 'lucide-react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ManageGroupsModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export const ManageGroupsModal: React.FC<ManageGroupsModalProps> = ({
   onUpdateGroup,
   onRequestDeleteGroup
 }) => {
+  useScrollLock(isOpen);
+
   const [newGroupName, setNewGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');

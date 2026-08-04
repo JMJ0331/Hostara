@@ -3,6 +3,7 @@ import {
   X, User, ShieldCheck, FileText, Lock, Mail, Phone, Eye, EyeOff, 
   Camera, KeyRound, CheckCircle2, AlertCircle
 } from 'lucide-react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface UserProfileData {
   email: string;
@@ -35,6 +36,8 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   currentUser,
   onUpdateUser
 }) => {
+  useScrollLock(isOpen);
+
   const [activeTab, setActiveTab] = useState<TabType>('perfil');
 
   // Profile Form state

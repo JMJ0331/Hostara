@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, Edit2, Trash2, Check, Phone, UserCheck } from 'lucide-react';
 import { BroomIcon } from '../icons/BroomIcon';
 import type { CleanerStaff } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ManageCleanersModalProps {
   isOpen: boolean;
@@ -20,14 +21,14 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
   onUpdateCleaner,
   onRequestDeleteCleaner
 }) => {
+  useScrollLock(isOpen);
+
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [notes, setNotes] = useState('');
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editNotes, setEditNotes] = useState('');
 
   if (!isOpen) return null;
 
@@ -36,35 +37,31 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
     if (!name.trim()) return;
     onAddCleaner({
       name: name.trim(),
-      phone: phone.trim(),
-      notes: notes.trim()
+      phone: phone.trim()
     });
     setName('');
     setPhone('');
-    setNotes('');
   };
 
   const handleStartEdit = (cleaner: CleanerStaff) => {
     setEditingId(cleaner.id);
     setEditName(cleaner.name);
     setEditPhone(cleaner.phone || '');
-    setEditNotes(cleaner.notes || '');
   };
 
   const handleSaveEdit = (id: string) => {
     if (editName.trim()) {
       onUpdateCleaner(id, {
         name: editName.trim(),
-        phone: editPhone.trim(),
-        notes: editNotes.trim()
+        phone: editPhone.trim()
       });
     }
     setEditingId(null);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-3.5 max-h-[90vh] sm:max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
+      <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[85vh] flex flex-col">
         {/* Modal Header */}
         <div className="flex items-start justify-between pb-3 border-b border-black/10 gap-2">
           <div className="flex items-center gap-2.5">
@@ -93,7 +90,7 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Nombre completo (ej: Juana Pérez)"
+              placeholder="Nombre completo"
               className="bg-white border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-black/10"
             />
             <input
@@ -106,18 +103,11 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
                 }
               }}
               onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
-              placeholder="Teléfono / WhatsApp (+52...)"
+              placeholder="Teléfono / WhatsApp"
               className="bg-white border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notas (ej: Turno mañana, Complejo Rialto)"
-              className="flex-1 bg-white border border-black/10 rounded-xl px-3 py-2 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
+          <div className="flex justify-end">
             <button
               type="submit"
               disabled={!name.trim()}
@@ -165,14 +155,7 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
                         placeholder="Teléfono"
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={editNotes}
-                        onChange={(e) => setEditNotes(e.target.value)}
-                        className="flex-1 bg-white border border-black/20 rounded-lg px-2.5 py-1.5 text-xs text-[#2D2D2D]"
-                        placeholder="Notas"
-                      />
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => handleSaveEdit(cleaner.id)}
@@ -205,9 +188,6 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
                           </span>
                         )}
                       </div>
-                      {cleaner.notes && (
-                        <p className="text-[11px] text-black/50 pl-5 break-words">{cleaner.notes}</p>
-                      )}
                     </div>
                     <div className="flex items-center gap-1 self-end sm:self-auto shrink-0 pt-1 sm:pt-0 border-t sm:border-0 border-black/5 w-full sm:w-auto justify-end">
                       <button
@@ -243,4 +223,5 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
     </div>
   );
 };
+
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   confirmText = "Sí, Eliminar",
   subtitle = "Esta acción no se puede deshacer"
 }) => {
+  useScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   return (

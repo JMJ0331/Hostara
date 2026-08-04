@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   onOpenAccountSettings
 }) => {
+  useScrollLock(isMobileMenuOpen);
   const navItems = [
     {
       id: 'dashboard' as ActiveTab,

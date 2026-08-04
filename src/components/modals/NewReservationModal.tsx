@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, User, DollarSign, Building2, Phone, Mail } from 'lucide-react';
 import type { Property, Platform, Reservation } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface NewReservationModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
   properties,
   onCreateReservation
 }) => {
+  useScrollLock(isOpen);
   const todayStr = new Date().toISOString().split('T')[0];
   const tomorrowStr = new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0];
 

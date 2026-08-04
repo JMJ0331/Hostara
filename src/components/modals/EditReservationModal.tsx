@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, DollarSign, Calendar } from 'lucide-react';
 import type { Reservation, Platform, ReservationStatus } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface EditReservationModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
   reservation,
   onUpdateReservation
 }) => {
+  useScrollLock(isOpen && !!reservation);
+
   if (!isOpen || !reservation) return null;
 
   const [guestName, setGuestName] = useState(reservation.guestName);

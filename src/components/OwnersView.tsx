@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Plus, Building2, CreditCard, Mail, Phone, DollarSign, Trash2, Edit2, X } from 'lucide-react';
 import type { Owner, Property, Reservation } from '../types';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface OwnersViewProps {
   owners: Owner[];
@@ -21,6 +22,8 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
+
+  useScrollLock(showAddModal || !!editingOwner);
 
   // Form states for Add / Edit
   const [name, setName] = useState('');

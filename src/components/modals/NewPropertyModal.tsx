@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { Owner, Platform, Property } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface NewPropertyModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
   onUpdateProperty,
   onSyncPropertyICal
 }) => {
+  useScrollLock(isOpen);
   const [name, setName] = useState('');
   const [group, setGroup] = useState(groups[0] || 'Rialto Residences');
   const [isNewGroup, setIsNewGroup] = useState(false);

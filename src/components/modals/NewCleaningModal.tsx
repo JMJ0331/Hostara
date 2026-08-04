@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { BroomIcon } from '../icons/BroomIcon';
 import type { Property, CleaningTask, CleanerStaff } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface NewCleaningModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
   cleaners = [],
   onCreateCleaningTask
 }) => {
+  useScrollLock(isOpen);
+
   const todayStr = new Date().toISOString().split('T')[0];
 
   const [propertyId, setPropertyId] = useState<string>(properties[0]?.id || '');

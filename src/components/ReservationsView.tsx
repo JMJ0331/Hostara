@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { 
   CalendarDays, 
   Plus, 
@@ -57,6 +58,8 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
 
   // Small popover/modal state when clicking a reservation pill
   const [smallModalRes, setSmallModalRes] = useState<Reservation | null>(null);
+
+  useScrollLock(!!smallModalRes);
 
   // Helper to calculate Monday of a given week
   const getMondayOf = (d: Date) => {

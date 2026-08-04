@@ -13,6 +13,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import type { Property } from '../types';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface ICalSyncModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const ICalSyncModal: React.FC<ICalSyncModalProps> = ({
   onSyncAll,
   isSyncing
 }) => {
+  useScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'sample' | 'custom' | 'raw' | 'export'>('sample');
   const [selectedPropId, setSelectedPropId] = useState<string>(properties[0]?.id || '');
   const [customUrl, setCustomUrl] = useState<string>('');
