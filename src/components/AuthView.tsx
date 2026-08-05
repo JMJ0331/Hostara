@@ -277,18 +277,18 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4 selection:bg-[#2D2D2D] selection:text-white">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-black/10 shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden transition-all">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-black/10 shadow-[0_8px_30px_rgba(0,0,0,0.08)] p-6 sm:p-8 space-y-6 relative overflow-hidden transition-all">
         
         {/* Subtle decorative top gradient bar */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#2D2D2D] via-gray-700 to-[#2D2D2D]" />
 
         {/* Header with Building Logo */}
         <div className="text-center space-y-3 pt-2">
-          <div className="w-14 h-14 bg-[#2D2D2D] rounded-2xl flex items-center justify-center shadow-md mx-auto text-white">
+          <div className="w-14 h-14 bg-[#2D2D2D] rounded-2xl flex items-center justify-center shadow-sm mx-auto text-white">
             <Building2 className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-[#2D2D2D]">Hostara</h1>
+            <h1 className="font-bold text-2xl tracking-tight text-[#2D2D2D]">Hostara</h1>
             <p className="text-xs font-medium text-black/50 mt-1">
               {mode === 'login' && 'Bienvenido de nuevo. Ingresa a tu plataforma.'}
               {mode === 'register' && 'Crea tu cuenta para gestionar tus rentas vacacionales.'}
@@ -434,7 +434,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3 text-xs">
             {/* Nombre y Apellido side by side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div>
                 <label className="block font-semibold text-[#2D2D2D] mb-1">Nombre</label>
                 <div className="relative">
@@ -445,7 +445,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Juan"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-8 sm:pl-9 pr-2 sm:pr-3 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                 </div>
               </div>
@@ -460,16 +460,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Pérez"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-8 sm:pl-9 pr-2 sm:pr-3 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                 </div>
               </div>
             </div>
 
             {/* Número Personal y Correo Electrónico side by side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div>
-                <label className="block font-semibold text-[#2D2D2D] mb-1">Número Personal</label>
+                <label className="block font-semibold text-[#2D2D2D] mb-1 truncate">Teléfono</label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -482,14 +482,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                       }
                     }}
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))}
-                    placeholder="+52 555 123 4567"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    placeholder="+52 555..."
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-8 sm:pl-9 pr-2 sm:pr-3 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-[#2D2D2D] mb-1">Correo Electrónico</label>
+                <label className="block font-semibold text-[#2D2D2D] mb-1 truncate">Correo</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -497,55 +497,55 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu.correo@ejemplo.com"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    placeholder="tu@correo.com"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-8 sm:pl-9 pr-2 sm:pr-3 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                 </div>
               </div>
             </div>
 
             {/* Contraseña y Repetir Contraseña side by side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div>
-                <label className="block font-semibold text-[#2D2D2D] mb-1">Contraseña</label>
+                <label className="block font-semibold text-[#2D2D2D] mb-1 truncate">Contraseña</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-black/40 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-9 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    placeholder="••••••••"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-7 sm:pl-9 pr-7 sm:pr-9 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-[#2D2D2D] mb-1">Repetir Contraseña</label>
+                <label className="block font-semibold text-[#2D2D2D] mb-1 truncate">Repetir</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-black/40 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repite la contraseña"
-                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-9 pr-9 py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
+                    placeholder="••••••••"
+                    className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl pl-7 sm:pl-9 pr-7 sm:pr-9 py-2 sm:py-2.5 text-xs text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-[#2D2D2D]/20 focus:border-[#2D2D2D] transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </button>
                 </div>
               </div>

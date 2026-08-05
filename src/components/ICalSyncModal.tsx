@@ -77,7 +77,7 @@ export const ICalSyncModal: React.FC<ICalSyncModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-2xl w-full border border-black/10 shadow-xl overflow-hidden flex flex-col max-h-[92vh] cursor-default"
+        className="bg-white rounded-2xl max-w-2xl w-full border border-black/10 shadow-md overflow-hidden flex flex-col max-h-[92vh] cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         

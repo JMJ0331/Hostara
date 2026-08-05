@@ -84,9 +84,8 @@ Favor de confirmar al terminar enviando foto de la unidad. ¡Gracias!`;
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2D2D2D] tracking-tight flex items-center gap-2">
-            <BroomIcon className="w-6 h-6 text-[#2D2D2D] shrink-0" />
-            <span>Control de Limpiezas y Operaciones</span>
+          <h1 className="text-2xl font-bold text-[#2D2D2D] tracking-tight">
+            Control de Limpiezas y Operaciones
           </h1>
           <p className="text-xs text-black/50 mt-0.5">
             Asignación de personal de limpieza, envío de órdenes por WhatsApp y control de costos.

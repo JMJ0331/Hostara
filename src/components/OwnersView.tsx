@@ -220,7 +220,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
       {/* Add Owner Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-black/10 shadow-xl">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-black/10 shadow-md">
             <div className="flex items-center justify-between border-b border-black/5 pb-3">
               <h3 className="font-bold text-base text-[#2D2D2D]">Registrar Nuevo Propietario</h3>
               <button onClick={() => setShowAddModal(false)} className="p-1 rounded-lg text-black/40 hover:text-black">
@@ -323,7 +323,7 @@ export const OwnersView: React.FC<OwnersViewProps> = ({
       {/* Edit Owner Modal */}
       {editingOwner && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 border border-black/10 shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 border border-black/10 shadow-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-black/5 pb-3">
               <h3 className="font-bold text-base text-[#2D2D2D]">Actualizar Propietario</h3>
               <button onClick={() => setEditingOwner(null)} className="p-1 rounded-lg text-black/40 hover:text-black">

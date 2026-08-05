@@ -193,7 +193,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-3xl w-full border border-black/10 shadow-2xl overflow-hidden flex flex-col h-[580px] max-h-[90vh] cursor-default"
+        className="bg-white rounded-2xl max-w-3xl w-full border border-black/10 shadow-lg overflow-hidden flex flex-col h-[580px] max-h-[90vh] cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         

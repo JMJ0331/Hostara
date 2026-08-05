@@ -31,7 +31,7 @@ export const PWAInstallBanner: React.FC = () => {
 
       {/* PWA Floating App Banner */}
       {!dismissed && (isInstallable || isIOS) && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md bg-[#1E1E1E] text-white p-4 rounded-2xl shadow-2xl border border-white/10 z-50 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md bg-[#1E1E1E] text-white p-4 rounded-2xl shadow-lg border border-white/10 z-50 animate-in slide-in-from-bottom duration-300">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl bg-[#2D2D2D] border border-white/20 flex items-center justify-center shrink-0 shadow-md">
               <img src="/icon.svg" alt="Hostara App Icon" className="w-7 h-7" />
@@ -92,7 +92,7 @@ export const PWAInstallBanner: React.FC = () => {
           onClick={() => setShowIOSModal(false)}
         >
           <div 
-            className="bg-white rounded-2xl max-w-sm w-full p-6 text-[#2D2D2D] shadow-2xl relative space-y-4 animate-in zoom-in-95 duration-200 cursor-default"
+            className="bg-white rounded-2xl max-w-sm w-full p-6 text-[#2D2D2D] shadow-md relative space-y-4 animate-in zoom-in-95 duration-200 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             <button

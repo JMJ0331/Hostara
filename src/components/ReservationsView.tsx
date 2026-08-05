@@ -919,7 +919,7 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
           onClick={() => setSmallModalRes(null)}
         >
           <div 
-            className="bg-white text-[#2D2D2D] rounded-2xl max-w-sm w-full p-4 sm:p-5 border border-black/10 shadow-2xl space-y-3.5 relative"
+            className="bg-white text-[#2D2D2D] rounded-2xl max-w-sm w-full p-4 sm:p-5 border border-black/10 shadow-md space-y-3.5 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

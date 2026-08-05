@@ -116,7 +116,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-3.5 sm:space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto cursor-default"
+        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-md space-y-3.5 sm:space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
@@ -166,7 +166,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
                 >
                   {groups.map((g) => (
                     <option key={g} value={g}>
-                      🏢 {g}
+                      {g}
                     </option>
                   ))}
                 </select>
@@ -193,7 +193,7 @@ export const NewPropertyModal: React.FC<NewPropertyModalProps> = ({
               >
                 {owners.map((o) => (
                   <option key={o.id} value={o.id}>
-                    👤 {o.name} ({o.commissionRate}%)
+                    {o.name} ({o.commissionRate}%)
                   </option>
                 ))}
               </select>

@@ -61,7 +61,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-3.5 sm:space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto cursor-default"
+        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-md space-y-3.5 sm:space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
@@ -82,7 +82,7 @@ export const NewReservationModal: React.FC<NewReservationModalProps> = ({
               >
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>
-                    🏢 {p.name} ({p.group}) — ${p.nightlyRateDefault}/noche
+                    {p.name} ({p.group})
                   </option>
                 ))}
               </select>

@@ -33,7 +33,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-sm w-full p-6 border border-black/10 shadow-2xl space-y-4 cursor-default"
+        className="bg-white rounded-2xl max-w-sm w-full p-6 border border-black/10 shadow-md space-y-4 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hostara-pwa-v3';
+const CACHE_NAME = 'hostara-pwa-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

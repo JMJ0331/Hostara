@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
 
           {/* Drawer Panel */}
-          <aside className="relative w-72 max-w-[80vw] bg-[#F4F4F2] shadow-2xl h-full z-10 flex flex-col justify-between animate-in slide-in-from-left duration-200">
+          <aside className="relative w-72 max-w-[80vw] bg-[#F4F4F2] shadow-lg h-full z-10 flex flex-col justify-between animate-in slide-in-from-left duration-200">
             {navContent}
           </aside>
         </div>

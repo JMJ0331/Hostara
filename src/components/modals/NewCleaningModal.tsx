@@ -65,14 +65,11 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 cursor-default"
+        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-md space-y-4 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
-          <div className="flex items-center gap-2">
-            <BroomIcon className="w-4 h-4 text-emerald-700" />
-            <h2 className="font-bold text-base text-[#2D2D2D]">Programar Orden de Limpieza</h2>
-          </div>
+          <h2 className="font-bold text-base text-[#2D2D2D]">Programar Orden de Limpieza</h2>
           <button onClick={onClose} className="p-1 text-black/40 hover:text-black">
             <X className="w-5 h-5" />
           </button>
@@ -89,7 +86,7 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
               >
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>
-                    🏢 {p.name} ({p.group})
+                    {p.name} ({p.group})
                   </option>
                 ))}
               </select>
