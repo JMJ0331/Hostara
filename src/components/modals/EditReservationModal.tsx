@@ -18,17 +18,15 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
 }) => {
   useScrollLock(isOpen && !!reservation);
 
-  if (!isOpen || !reservation) return null;
-
-  const [guestName, setGuestName] = useState(reservation.guestName);
-  const [guestPhone, setGuestPhone] = useState(reservation.guestPhone || '');
-  const [platform, setPlatform] = useState<Platform>(reservation.platform);
-  const [checkIn, setCheckIn] = useState(reservation.checkIn);
-  const [checkOut, setCheckOut] = useState(reservation.checkOut);
-  const [totalPaid, setTotalPaid] = useState<number | ''>(reservation.totalPaid);
-  const [cleaningCost, setCleaningCost] = useState<number | ''>(reservation.cleaningCost);
-  const [status, setStatus] = useState<ReservationStatus>(reservation.status);
-  const [notes, setNotes] = useState(reservation.notes || '');
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [platform, setPlatform] = useState<Platform>('Direct');
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [totalPaid, setTotalPaid] = useState<number | ''>('');
+  const [cleaningCost, setCleaningCost] = useState<number | ''>('');
+  const [status, setStatus] = useState<ReservationStatus>('active');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (reservation) {
@@ -43,6 +41,8 @@ export const EditReservationModal: React.FC<EditReservationModalProps> = ({
       setNotes(reservation.notes || '');
     }
   }, [reservation]);
+
+  if (!isOpen || !reservation) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
