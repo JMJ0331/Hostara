@@ -319,7 +319,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <button 
               onClick={onOpenICalModal}
-              className="w-full py-2 bg.gray-50 border border-black/5 rounded-xl text-xs font-bold text-[#2D2D2D] hover:bg-gray-100 transition-all"
+              className="w-full py-2 bg-gray-50 border border-black/5 rounded-xl text-xs font-bold text-[#2D2D2D] hover:bg-gray-100 transition-all"
             >
               Sincronizar ahora
             </button>

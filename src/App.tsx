@@ -17,6 +17,7 @@ import { ManageCleanersModal } from './components/modals/ManageCleanersModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 import { AccountSettingsModal } from './components/modals/AccountSettingsModal';
 import { AuthView } from './components/AuthView';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
 
 import type { 
   Property, 
@@ -518,6 +519,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col font-sans text-[#2D2D2D]">
+      <PWAInstallBanner />
       
       {/* Top Navigation */}
       <Navbar
@@ -536,7 +538,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row">
+      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row">
         
         {/* Left Sidebar Menu */}
         <Sidebar

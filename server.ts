@@ -1437,6 +1437,34 @@ app.post('/api/seed/reset', (req, res) => {
   res.json({ success: true, message: 'Datos borrados con éxito' });
 });
 
+// PWA Static Assets routes with proper MIME types
+app.get('/manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json');
+  res.sendFile(path.join(process.cwd(), 'public', 'manifest.json'));
+});
+
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(process.cwd(), 'public', 'sw.js'));
+});
+
+app.get('/icon.svg', (req, res) => {
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.sendFile(path.join(process.cwd(), 'public', 'icon.svg'));
+});
+
+app.get('/icon-192.png', (req, res) => {
+  res.setHeader('Content-Type', 'image/png');
+  res.sendFile(path.join(process.cwd(), 'public', 'icon-192.png'));
+});
+
+app.get('/icon-512.png', (req, res) => {
+  res.setHeader('Content-Type', 'image/png');
+  res.sendFile(path.join(process.cwd(), 'public', 'icon-512.png'));
+});
+
 // VITE MIDDLEWARE SETUP
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
