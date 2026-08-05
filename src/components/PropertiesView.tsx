@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Building2, 
+  Home, 
+  Building,
   Plus, 
   CalendarSync, 
   Edit3, 
@@ -94,7 +95,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
             onClick={onOpenManageGroupsModal}
             className="btn-secondary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
           >
-            <Building2 className="w-4 h-4 text-[#2D2D2D] shrink-0" />
+            <Building className="w-4 h-4 text-[#2D2D2D] shrink-0" />
             <span>Gestionar Complejos</span>
           </button>
           <button
@@ -148,7 +149,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
           <div key={groupName} className="space-y-4">
             
             <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Building2 className="w-4 h-4 text-[#2D2D2D]" />
+              <Building className="w-4 h-4 text-[#2D2D2D]" />
               <h2 className="font-bold text-base text-[#2D2D2D]">
                 {groupName}
               </h2>

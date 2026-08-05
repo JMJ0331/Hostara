@@ -2,7 +2,7 @@ import React from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { 
   LayoutDashboard, 
-  Building2, 
+  Home, 
   CalendarDays, 
   Users, 
   BarChart3,
@@ -53,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'properties' as ActiveTab,
       label: 'Propiedades',
-      icon: Building2,
+      icon: Home,
       badge: null
     },
     {
