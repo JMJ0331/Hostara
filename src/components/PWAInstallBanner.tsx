@@ -39,7 +39,7 @@ export const PWAInstallBanner: React.FC = () => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="font-bold text-sm text-white tracking-tight">Instalar Hostara App</h4>
+                <h4 className="font-bold text-sm text-white tracking-tight">Instalar Hostara</h4>
                 <button
                   onClick={() => setDismissed(true)}
                   className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"

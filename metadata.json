@@ -1,5 +1,5 @@
 {
-  "name": "Hostara - Gestor de Rentas Vacacionales",
+  "name": "Hostara",
   "description": "Sistema de gestión de rentas vacacionales MVP con sincronización iCal, control de limpiezas, gestión de complejos y reportes financieros.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
