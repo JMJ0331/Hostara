@@ -288,7 +288,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
             <Building2 className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-black italic tracking-tight text-[#2D2D2D]">Hostara</h1>
+            <h1 className="text-2xl font-black tracking-tight text-[#2D2D2D]">Hostara</h1>
             <p className="text-xs font-medium text-black/50 mt-1">
               {mode === 'login' && 'Bienvenido de nuevo. Ingresa a tu plataforma.'}
               {mode === 'register' && 'Crea tu cuenta para gestionar tus rentas vacacionales.'}

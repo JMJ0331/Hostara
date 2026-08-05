@@ -185,7 +185,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-gray-500 italic text-xs">
+                      <td className="px-6 py-4 text-gray-500 text-xs">
                         {res.propertyName}
                       </td>
                       <td className="px-6 py-4 text-xs text-gray-600 font-mono">

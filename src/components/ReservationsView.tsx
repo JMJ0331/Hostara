@@ -560,7 +560,7 @@ export const ReservationsView: React.FC<ReservationsViewProps> = ({
 
                       <div className="space-y-1.5 flex-1 min-h-[90px]">
                         {dayReservations.length === 0 ? (
-                          <div className="text-[10px] text-black/30 italic pt-2 text-center">Disponible</div>
+                          <div className="text-[10px] text-black/30 pt-2 text-center">Disponible</div>
                         ) : (
                           dayReservations.map((res) => (
                             <div

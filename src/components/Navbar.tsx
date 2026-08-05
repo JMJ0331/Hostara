@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
             </div>
             <div>
-              <span className="font-bold text-base sm:text-xl tracking-tight italic text-[#2D2D2D] block leading-tight">
+              <span className="font-bold text-base sm:text-xl tracking-tight text-[#2D2D2D] block leading-tight">
                 Hostara
               </span>
             </div>

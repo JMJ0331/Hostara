@@ -60,18 +60,19 @@ export const ManageCleanersModal: React.FC<ManageCleanersModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[85vh] flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[85vh] flex flex-col cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
         <div className="flex items-start justify-between pb-3 border-b border-black/10 gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#2D2D2D] text-white rounded-xl shrink-0">
-              <BroomIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-bold text-sm sm:text-base text-[#2D2D2D] leading-snug">Gestionar Personal de Limpieza</h2>
-              <p className="text-[11px] text-black/50 leading-tight">Administra el equipo de encargadas y sus contactos de WhatsApp</p>
-            </div>
+          <div>
+            <h2 className="font-bold text-sm sm:text-base text-[#2D2D2D] leading-snug">Gestionar Personal de Limpieza</h2>
+            <p className="text-[11px] text-black/50 leading-tight">Administra el equipo de encargadas y sus contactos de WhatsApp</p>
           </div>
           <button 
             onClick={onClose} 

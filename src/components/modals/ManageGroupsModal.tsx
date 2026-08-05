@@ -47,19 +47,20 @@ export const ManageGroupsModal: React.FC<ManageGroupsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[85vh] flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 border border-black/10 shadow-xl space-y-4 max-h-[85vh] flex flex-col cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between pb-3 border-b border-black/10">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#2D2D2D] text-white rounded-xl">
-              <Building2 className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-bold text-base text-[#2D2D2D]">Gestionar Complejos</h2>
-              <p className="text-[11px] text-black/50">Crea, renombrar o eliminar complejos vacacionales</p>
-            </div>
+          <div>
+            <h2 className="font-bold text-base text-[#2D2D2D]">Gestionar Complejos</h2>
+            <p className="text-[11px] text-black/50">Crea, renombrar o eliminar complejos vacacionales</p>
           </div>
-          <button onClick={onClose} className="p-1 text-black/40 hover:text-black rounded-lg">
+          <button onClick={onClose} className="p-1 text-black/40 hover:text-black rounded-lg cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -122,7 +123,7 @@ export const ManageGroupsModal: React.FC<ManageGroupsModalProps> = ({
                 ) : (
                   <>
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-semibold text-[#2D2D2D] truncate">🏢 {group}</span>
+                      <span className="font-semibold text-[#2D2D2D] truncate">{group}</span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button

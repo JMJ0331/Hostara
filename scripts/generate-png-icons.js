@@ -4,34 +4,25 @@ import path from 'path';
 
 function createHostaraIcon(size, outputPath) {
   const png = new PNG({ width: size, height: size });
-
-  // Dark background #1E1E1E with gradient to #3A3A3A
-  const radius = Math.floor(size * 0.22);
+  const radius = Math.floor(size * 0.234); // ~120px for 512
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const idx = (size * y + x) << 2;
 
-      // Check rounded rect boundaries
+      // Check rounded corner bounds
       let inCorner = false;
-      let cornerDist = 0;
-
       if (x < radius && y < radius) {
-        cornerDist = Math.hypot(radius - x, radius - y);
-        inCorner = cornerDist > radius;
+        inCorner = Math.hypot(radius - x, radius - y) > radius;
       } else if (x > size - radius && y < radius) {
-        cornerDist = Math.hypot(x - (size - radius), radius - y);
-        inCorner = cornerDist > radius;
+        inCorner = Math.hypot(x - (size - radius), radius - y) > radius;
       } else if (x < radius && y > size - radius) {
-        cornerDist = Math.hypot(radius - x, y - (size - radius));
-        inCorner = cornerDist > radius;
+        inCorner = Math.hypot(radius - x, y - (size - radius)) > radius;
       } else if (x > size - radius && y > size - radius) {
-        cornerDist = Math.hypot(x - (size - radius), y - (size - radius));
-        inCorner = cornerDist > radius;
+        inCorner = Math.hypot(x - (size - radius), y - (size - radius)) > radius;
       }
 
       if (inCorner) {
-        // Transparent outside rounded corners
         png.data[idx] = 0;
         png.data[idx + 1] = 0;
         png.data[idx + 2] = 0;
@@ -39,41 +30,21 @@ function createHostaraIcon(size, outputPath) {
         continue;
       }
 
-      // Base Dark Gray background gradient
-      const factor = (x + y) / (size * 2);
-      let r = Math.floor(45 + factor * 20); // ~#2D2D2D
-      let g = Math.floor(45 + factor * 20);
-      let b = Math.floor(45 + factor * 20);
+      // Dark background #242424
+      let r = 36;
+      let g = 36;
+      let b = 36;
       let a = 255;
 
-      // Draw Monogram "H" Emblem
-      const leftStem = x >= size * 0.25 && x <= size * 0.39 && y >= size * 0.22 && y <= size * 0.78;
-      const rightStem = x >= size * 0.61 && x <= size * 0.75 && y >= size * 0.22 && y <= size * 0.78;
-      const crossbar = x >= size * 0.35 && x <= size * 0.65 && y >= size * 0.43 && y <= size * 0.57;
+      // Bold White H
+      const leftStem = x >= size * 0.281 && x <= size * 0.406 && y >= size * 0.234 && y <= size * 0.766;
+      const rightStem = x >= size * 0.594 && x <= size * 0.719 && y >= size * 0.234 && y <= size * 0.766;
+      const crossbar = x >= size * 0.406 && x <= size * 0.594 && y >= size * 0.438 && y <= size * 0.562;
 
-      // Triangle Roof Accent above crossbar
-      const roofPeakY = size * 0.33;
-      const roofBaseY = size * 0.43;
-      const inRoofAccent = y >= roofPeakY && y <= roofBaseY &&
-        Math.abs(x - size * 0.5) <= ((y - roofPeakY) / (roofBaseY - roofPeakY)) * (size * 0.12);
-
-      if (inRoofAccent) {
-        // Rose Gold Accent #F4C7B8
-        r = 244;
-        g = 199;
-        b = 184;
-      } else if (leftStem || rightStem || crossbar) {
-        // Crisp Off-White #FAFAF8
-        r = 250;
-        g = 250;
-        b = 248;
-      }
-
-      // Subtle inner border line
-      if (x < 6 || y < 6 || x > size - 6 || y > size - 6) {
-        r = Math.min(255, r + 30);
-        g = Math.min(255, g + 30);
-        b = Math.min(255, b + 30);
+      if (leftStem || rightStem || crossbar) {
+        r = 255;
+        g = 255;
+        b = 255;
       }
 
       png.data[idx] = r;

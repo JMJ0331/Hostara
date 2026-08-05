@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'cleaning' as ActiveTab,
-      label: 'Limpieza',
+      label: 'Limpiezas',
       icon: BroomIcon,
       badge: pendingCleaningCount > 0 ? pendingCleaningCount : null,
       badgeBg: 'bg-[#D9E8D2] text-[#234E1D]'

@@ -1455,6 +1455,11 @@ app.get('/icon.svg', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'icon.svg'));
 });
 
+app.get('/favicon.ico', (req, res) => {
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.sendFile(path.join(process.cwd(), 'public', 'icon.svg'));
+});
+
 app.get('/icon-192.png', (req, res) => {
   res.setHeader('Content-Type', 'image/png');
   res.sendFile(path.join(process.cwd(), 'public', 'icon-192.png'));

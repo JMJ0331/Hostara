@@ -133,7 +133,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
                   : 'bg-white text-black/70 hover:bg-black/5 border border-black/10'
               }`}
             >
-              🏢 {group} ({count})
+              {group} ({count})
             </button>
           );
         })}
@@ -149,7 +149,6 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
           <div key={groupName} className="space-y-4">
             
             <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Building className="w-4 h-4 text-[#2D2D2D]" />
               <h2 className="font-bold text-base text-[#2D2D2D]">
                 {groupName}
               </h2>

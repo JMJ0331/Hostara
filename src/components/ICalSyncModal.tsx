@@ -72,8 +72,14 @@ export const ICalSyncModal: React.FC<ICalSyncModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 selection:bg-[#2D2D2D] selection:text-white">
-      <div className="bg-white rounded-2xl max-w-2xl w-full border border-black/10 shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div 
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 selection:bg-[#2D2D2D] selection:text-white cursor-pointer"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-2xl w-full border border-black/10 shadow-xl overflow-hidden flex flex-col max-h-[92vh] cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
         <div className="p-4 sm:p-5 bg-[#FAFAF8] border-b border-black/10 flex items-center justify-between gap-2">

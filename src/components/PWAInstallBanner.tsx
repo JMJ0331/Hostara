@@ -87,8 +87,14 @@ export const PWAInstallBanner: React.FC = () => {
 
       {/* iOS Safari Installation Help Modal */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-[#2D2D2D] shadow-2xl relative space-y-4 animate-in zoom-in-95 duration-200">
+        <div 
+          className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setShowIOSModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-sm w-full p-6 text-[#2D2D2D] shadow-2xl relative space-y-4 animate-in zoom-in-95 duration-200 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowIOSModal(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-black p-1 rounded-lg"
