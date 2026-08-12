@@ -17,7 +17,15 @@ import { ManageCleanersModal } from './components/modals/ManageCleanersModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 import { AccountSettingsModal } from './components/modals/AccountSettingsModal';
 import { AuthView } from './components/AuthView';
+import { OnboardingView } from './components/OnboardingView';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
+import { 
+  fetchUserOrganization, 
+  extractProfileFromUser, 
+  signOutSupabase, 
+  type UserOrganization 
+} from './services/authService';
 
 import type { 
   Property, 
@@ -31,6 +39,8 @@ import type {
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<{ email: string; firstName?: string; lastName?: string; phone?: string; avatarUrl?: string; id?: string } | null>(null);
+  const [activeOrg, setActiveOrg] = useState<UserOrganization | null>(null);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -161,25 +171,72 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Check saved session
-    const saved = localStorage.getItem('hostara_session') || sessionStorage.getItem('hostara_session');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {
-        console.error('Session error:', e);
+    let isMounted = true;
+
+    const initAuth = async () => {
+      if (!isSupabaseConfigured) {
+        const saved = localStorage.getItem('hostara_session') || sessionStorage.getItem('hostara_session');
+        if (saved) {
+          try { setCurrentUser(JSON.parse(saved)); } catch (e) { console.error('Session error:', e); }
+        }
+        if (isMounted) setAuthLoading(false);
+        return;
       }
-    }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const profile = extractProfileFromUser(session.user);
+          if (isMounted) setCurrentUser(profile);
+
+          const org = await fetchUserOrganization(session.user.id);
+          if (isMounted) setActiveOrg(org);
+        } else {
+          if (isMounted) {
+            setCurrentUser(null);
+            setActiveOrg(null);
+          }
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        if (isMounted) setAuthLoading(false);
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const profile = extractProfileFromUser(session.user);
+        setCurrentUser(profile);
+        const org = await fetchUserOrganization(session.user.id);
+        setActiveOrg(org);
+      } else {
+        setCurrentUser(null);
+        setActiveOrg(null);
+      }
+      setAuthLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
-    fetchAllData();
-  }, [currentUser]);
+    if (currentUser) {
+      fetchAllData();
+    }
+  }, [currentUser, activeOrg]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('hostara_session');
     sessionStorage.removeItem('hostara_session');
+    await signOutSupabase();
     setCurrentUser(null);
+    setActiveOrg(null);
   };
 
   const requestLogout = () => {
@@ -500,6 +557,41 @@ export default function App() {
     });
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-lg mx-auto animate-pulse">
+            H
+          </div>
+          <p className="text-xs font-semibold text-[#2D2D2D]">Verificando sesión en Hostara...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <AuthView onLoginSuccess={(u) => setCurrentUser(u)} />;
+  }
+
+  if (isSupabaseConfigured && !activeOrg) {
+    return (
+      <OnboardingView
+        userName={currentUser.firstName ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim() : undefined}
+        userEmail={currentUser.email}
+        onOrganizationCreated={(org) => {
+          setActiveOrg({
+            organizationId: org.organizationId,
+            organizationName: org.organizationName,
+            organizationSlug: org.organizationSlug,
+            role: 'owner',
+            status: 'active'
+          });
+        }}
+      />
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
@@ -511,10 +603,6 @@ export default function App() {
         </div>
       </div>
     );
-  }
-
-  if (!currentUser) {
-    return <AuthView onLoginSuccess={(u) => setCurrentUser(u)} />;
   }
 
   return (
