@@ -121,11 +121,21 @@ export async function signOutSupabase() {
   }
 }
 
+export interface OrganizationMemberInfo {
+  id: string;
+  userId?: string;
+  email: string;
+  role: string;
+  status: string;
+  fullName?: string;
+  createdAt?: string;
+}
+
 /**
- * Get active user organization membership from Supabase PostgreSQL
+ * Get ALL active user organization memberships from Supabase PostgreSQL
  */
-export async function fetchUserOrganization(userId: string): Promise<UserOrganization | null> {
-  if (!isSupabaseConfigured || !userId) return null;
+export async function fetchAllUserOrganizations(userId: string): Promise<UserOrganization[]> {
+  if (!isSupabaseConfigured || !userId) return [];
 
   try {
     const { data, error } = await supabase
@@ -141,31 +151,103 @@ export async function fetchUserOrganization(userId: string): Promise<UserOrganiz
         )
       `)
       .eq('user_id', userId)
-      .eq('status', 'active')
-      .maybeSingle();
+      .eq('status', 'active');
 
     if (error) {
-      console.warn('Error fetching organization membership:', error.message);
-      return null;
+      console.warn('Error fetching organization memberships:', error.message);
+      return [];
     }
 
-    if (!data || !data.organizations) {
-      return null;
+    if (!data || data.length === 0) {
+      return [];
     }
 
-    const org = Array.isArray(data.organizations) ? data.organizations[0] : data.organizations;
-
-    return {
-      organizationId: data.organization_id,
-      organizationName: org.name,
-      organizationSlug: org.slug,
-      role: data.role,
-      status: data.status,
-    };
+    return data
+      .filter((item) => item.organizations)
+      .map((item) => {
+        const org = Array.isArray(item.organizations) ? item.organizations[0] : item.organizations;
+        return {
+          organizationId: item.organization_id,
+          organizationName: org.name,
+          organizationSlug: org.slug,
+          role: item.role,
+          status: item.status,
+        };
+      });
   } catch (err) {
-    console.error('Failed to query organization membership:', err);
-    return null;
+    console.error('Failed to query organization memberships:', err);
+    return [];
   }
+}
+
+/**
+ * Get single active user organization (backwards compatible wrapper)
+ */
+export async function fetchUserOrganization(userId: string): Promise<UserOrganization | null> {
+  const orgs = await fetchAllUserOrganizations(userId);
+  return orgs.length > 0 ? orgs[0] : null;
+}
+
+/**
+ * Fetch all members of a specific organization
+ */
+export async function fetchUserOrganizationMembers(orgId: string): Promise<OrganizationMemberInfo[]> {
+  if (!isSupabaseConfigured || !orgId) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('organization_members')
+      .select('id, user_id, email, role, status, full_name, created_at')
+      .eq('organization_id', orgId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.warn('Error fetching organization members:', error.message);
+      return [];
+    }
+
+    return (data || []).map((m) => ({
+      id: m.id,
+      userId: m.user_id,
+      email: m.email,
+      role: m.role,
+      status: m.status,
+      fullName: m.full_name || '',
+      createdAt: m.created_at,
+    }));
+  } catch (err) {
+    console.error('Failed to query organization members:', err);
+    return [];
+  }
+}
+
+/**
+ * Manage (invite/update) Organization Member via PostgreSQL RPC
+ */
+export async function manageOrganizationMemberRPC(params: {
+  orgId: string;
+  targetEmail: string;
+  role: string;
+  status?: string;
+  fullName?: string;
+}): Promise<any> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase no está configurado.');
+  }
+
+  const { data, error } = await supabase.rpc('manage_organization_member', {
+    p_org_id: params.orgId,
+    p_target_email: params.targetEmail,
+    p_role: params.role,
+    p_status: params.status || 'active',
+    p_full_name: params.fullName || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 /**

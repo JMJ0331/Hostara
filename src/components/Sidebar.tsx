@@ -12,6 +12,7 @@ import {
   Settings
 } from 'lucide-react';
 import { BroomIcon } from './icons/BroomIcon';
+import { can, Permission } from '../lib/permissions';
 
 export type ActiveTab = 'dashboard' | 'properties' | 'reservations' | 'cleaning' | 'owners' | 'reports';
 
@@ -25,6 +26,7 @@ interface SidebarProps {
   userName?: string;
   userEmail?: string;
   avatarUrl?: string;
+  userRole?: string;
   onLogout?: () => void;
   onOpenAccountSettings?: () => void;
 }
@@ -39,50 +41,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
   userName,
   userEmail,
   avatarUrl,
+  userRole = 'member',
   onLogout,
   onOpenAccountSettings
 }) => {
   useScrollLock(isMobileMenuOpen);
-  const navItems = [
+
+  const rawNavItems: {
+    id: ActiveTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge: number | null;
+    badgeBg?: string;
+    permission: Permission | 'always';
+  }[] = [
     {
-      id: 'dashboard' as ActiveTab,
+      id: 'dashboard',
       label: 'Dashboard',
       icon: LayoutDashboard,
-      badge: null
+      badge: null,
+      permission: 'always'
     },
     {
-      id: 'properties' as ActiveTab,
+      id: 'properties',
       label: 'Propiedades',
       icon: Home,
-      badge: null
+      badge: null,
+      permission: 'properties.view'
     },
     {
-      id: 'reservations' as ActiveTab,
+      id: 'reservations',
       label: 'Calendario',
       icon: CalendarDays,
       badge: activeBookingsCount > 0 ? activeBookingsCount : null,
-      badgeBg: 'bg-[#D9D2F4] text-[#3B2A6B]'
+      badgeBg: 'bg-[#D9D2F4] text-[#3B2A6B]',
+      permission: 'reservations.view'
     },
     {
-      id: 'cleaning' as ActiveTab,
+      id: 'cleaning',
       label: 'Limpiezas',
       icon: BroomIcon,
       badge: pendingCleaningCount > 0 ? pendingCleaningCount : null,
-      badgeBg: 'bg-[#D9E8D2] text-[#234E1D]'
+      badgeBg: 'bg-[#D9E8D2] text-[#234E1D]',
+      permission: 'cleaning.view'
     },
     {
-      id: 'owners' as ActiveTab,
+      id: 'owners',
       label: 'Propietarios',
       icon: Users,
-      badge: null
+      badge: null,
+      permission: 'owners.view'
     },
     {
-      id: 'reports' as ActiveTab,
+      id: 'reports',
       label: 'Reportes',
       icon: BarChart3,
-      badge: null
+      badge: null,
+      permission: 'financials.view'
     }
   ];
+
+  const navItems = rawNavItems.filter((item) => {
+    if (item.permission === 'always') return true;
+    return can(userRole, item.permission);
+  });
 
   const handleSelectTab = (tab: ActiveTab) => {
     setActiveTab(tab);

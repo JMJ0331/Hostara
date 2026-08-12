@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, User, ShieldCheck, FileText, Lock, Mail, Phone, Eye, EyeOff, 
-  Camera, KeyRound, CheckCircle2, AlertCircle
+  Camera, KeyRound, CheckCircle2, AlertCircle, Users, UserPlus, RefreshCw,
+  Building
 } from 'lucide-react';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import type { UserOrganization, OrganizationMemberInfo } from '../../services/authService';
+import { fetchUserOrganizationMembers, manageOrganizationMemberRPC } from '../../services/authService';
+import { can, getRoleLabel, getRoleBadgeColor, UserRole } from '../../lib/permissions';
 
 interface UserProfileData {
   email: string;
@@ -18,9 +22,10 @@ interface AccountSettingsModalProps {
   onClose: () => void;
   currentUser: UserProfileData;
   onUpdateUser: (updatedUser: UserProfileData) => void;
+  activeOrg?: UserOrganization | null;
 }
 
-type TabType = 'perfil' | 'privacidad' | 'legal';
+type TabType = 'perfil' | 'equipo' | 'privacidad' | 'legal';
 
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
@@ -34,7 +39,8 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   isOpen,
   onClose,
   currentUser,
-  onUpdateUser
+  onUpdateUser,
+  activeOrg
 }) => {
   useScrollLock(isOpen);
 
@@ -55,10 +61,21 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   const [showOldPass, setShowOldPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
+  // Team state
+  const [members, setMembers] = useState<OrganizationMemberInfo[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<UserRole>('host');
+  const [inviteFullName, setInviteFullName] = useState('');
+  const [isSubmittingInvite, setIsSubmittingInvite] = useState(false);
+
   // Status feedback
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const canViewMembers = activeOrg ? can(activeOrg.role, 'members.view') : false;
+  const canInviteMembers = activeOrg ? can(activeOrg.role, 'members.invite') : false;
 
   useEffect(() => {
     if (isOpen) {
@@ -75,6 +92,50 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       setSuccessMsg('');
     }
   }, [isOpen, currentUser]);
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'equipo' && activeOrg?.organizationId && canViewMembers) {
+      loadTeamMembers();
+    }
+  }, [isOpen, activeTab, activeOrg?.organizationId]);
+
+  const loadTeamMembers = async () => {
+    if (!activeOrg?.organizationId) return;
+    setIsLoadingMembers(true);
+    try {
+      const data = await fetchUserOrganizationMembers(activeOrg.organizationId);
+      setMembers(data);
+    } catch (err: any) {
+      console.error('Error loading members:', err);
+    } finally {
+      setIsLoadingMembers(false);
+    }
+  };
+
+  const handleInviteMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeOrg?.organizationId || !inviteEmail) return;
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsSubmittingInvite(true);
+
+    try {
+      await manageOrganizationMemberRPC({
+        orgId: activeOrg.organizationId,
+        targetEmail: inviteEmail.trim(),
+        role: inviteRole,
+        fullName: inviteFullName.trim() || undefined
+      });
+      setSuccessMsg(`¡Miembro/Invitación guardado para ${inviteEmail}!`);
+      setInviteEmail('');
+      setInviteFullName('');
+      await loadTeamMembers();
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error al agregar miembro.');
+    } finally {
+      setIsSubmittingInvite(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -234,6 +295,21 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
               <User className="w-4 h-4 shrink-0" />
               <span>Perfil</span>
             </button>
+
+            {canViewMembers && (
+              <button
+                type="button"
+                onClick={() => { setActiveTab('equipo'); setErrorMsg(''); setSuccessMsg(''); }}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 md:w-full ${
+                  activeTab === 'equipo' 
+                    ? 'bg-[#2D2D2D] text-white shadow-xs' 
+                    : 'text-black/70 hover:bg-black/5'
+                }`}
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                <span>Equipo y Permisos</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -433,6 +509,137 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
                   </button>
                 </div>
               </form>
+            )}
+
+            {/* TAB: EQUIPO Y PERMISOS */}
+            {activeTab === 'equipo' && canViewMembers && (
+              <div className="space-y-5 text-xs text-[#2D2D2D]">
+                <div className="p-3.5 bg-[#FAFAF8] border border-black/10 rounded-2xl flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold shrink-0">
+                      <Building className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-[#2D2D2D]">{activeOrg?.organizationName}</h3>
+                      <p className="text-[11px] text-black/50">
+                        Tu rol actual en esta organización: <span className="font-bold text-purple-800">{getRoleLabel(activeOrg?.role)}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={loadTeamMembers}
+                    disabled={isLoadingMembers}
+                    className="p-2 bg-white hover:bg-black/5 border border-black/10 rounded-xl text-black/60 hover:text-black transition-all cursor-pointer"
+                    title="Recargar lista"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingMembers ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+
+                {/* Invite Member Form */}
+                {canInviteMembers && (
+                  <form onSubmit={handleInviteMember} className="p-4 bg-white border border-black/10 rounded-2xl space-y-3 shadow-2xs">
+                    <div className="flex items-center gap-2 font-bold text-xs text-[#2D2D2D]">
+                      <UserPlus className="w-4 h-4 text-purple-700" />
+                      <span>Agregar / Invitar Miembro al Equipo</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold mb-1">Correo Electrónico *</label>
+                        <input
+                          type="email"
+                          required
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="correo@ejemplo.com"
+                          className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-[#2D2D2D] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold mb-1">Nombre Completo</label>
+                        <input
+                          type="text"
+                          value={inviteFullName}
+                          onChange={(e) => setInviteFullName(e.target.value)}
+                          placeholder="Ej. Ana María Pérez"
+                          className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-[#2D2D2D] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold mb-1">Rol *</label>
+                        <select
+                          value={inviteRole}
+                          onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                          className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-[#2D2D2D] focus:outline-none cursor-pointer"
+                        >
+                          <option value="admin">Administrador (Acceso total operativo)</option>
+                          <option value="host">Anfitrión (Propiedades y Reservas)</option>
+                          <option value="cleaner">Personal de Limpieza (Solo tareas)</option>
+                          <option value="member">Miembro (Lectura básica)</option>
+                          {activeOrg?.role === 'owner' && <option value="owner">Owner (Propietario de Cuenta)</option>}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingInvite || !inviteEmail}
+                        className="bg-[#2D2D2D] hover:bg-black text-white px-4 py-2 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>{isSubmittingInvite ? 'Guardando...' : 'Guardar Miembro'}</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Team Members List */}
+                <div className="space-y-2">
+                  <h4 className="font-bold text-xs text-[#2D2D2D] px-1">Miembros de la Organización ({members.length})</h4>
+
+                  {isLoadingMembers ? (
+                    <div className="py-8 text-center text-xs text-black/40 animate-pulse">Cargando miembros...</div>
+                  ) : members.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-black/40 border border-dashed border-black/10 rounded-2xl">
+                      No se encontraron otros miembros en esta organización.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-black/5 border border-black/10 rounded-2xl overflow-hidden bg-white">
+                      {members.map((m) => (
+                        <div key={m.id} className="p-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF8] transition-colors">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-[#2D2D2D] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                              {m.fullName ? m.fullName[0].toUpperCase() : m.email[0].toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs text-[#2D2D2D] truncate">
+                                {m.fullName || m.email}
+                              </p>
+                              <p className="text-[10px] text-black/50 truncate">{m.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${getRoleBadgeColor(m.role)}`}>
+                              {getRoleLabel(m.role)}
+                            </span>
+                            <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                              m.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                              {m.status === 'active' ? 'Activo' : m.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* TAB 2: PRIVACIDAD */}

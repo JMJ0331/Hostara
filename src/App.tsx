@@ -22,10 +22,13 @@ import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { 
   fetchUserOrganization, 
+  fetchAllUserOrganizations,
+  createOrganizationRPC,
   extractProfileFromUser, 
   signOutSupabase, 
   type UserOrganization 
 } from './services/authService';
+import { can } from './lib/permissions';
 
 import type { 
   Property, 
@@ -40,10 +43,16 @@ import type {
 export default function App() {
   const [currentUser, setCurrentUser] = useState<{ email: string; firstName?: string; lastName?: string; phone?: string; avatarUrl?: string; id?: string } | null>(null);
   const [activeOrg, setActiveOrg] = useState<UserOrganization | null>(null);
+  const [userOrgs, setUserOrgs] = useState<UserOrganization[]>([]);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Create Org Modal
+  const [isCreateOrgModalOpen, setIsCreateOrgModalOpen] = useState<boolean>(false);
+  const [newOrgNameInput, setNewOrgNameInput] = useState<string>('');
+  const [isCreatingOrg, setIsCreatingOrg] = useState<boolean>(false);
 
   // Enforce light mode across application
   useEffect(() => {
@@ -173,6 +182,19 @@ export default function App() {
   useEffect(() => {
     let isMounted = true;
 
+    const loadUserAndOrgs = async (userId: string) => {
+      const orgs = await fetchAllUserOrganizations(userId);
+      if (!isMounted) return;
+      setUserOrgs(orgs);
+
+      const savedOrgId = localStorage.getItem('hostara_active_org_id');
+      let current = orgs.find(o => o.organizationId === savedOrgId);
+      if (!current && orgs.length > 0) {
+        current = orgs[0];
+      }
+      setActiveOrg(current || null);
+    };
+
     const initAuth = async () => {
       if (!isSupabaseConfigured) {
         const saved = localStorage.getItem('hostara_session') || sessionStorage.getItem('hostara_session');
@@ -188,13 +210,12 @@ export default function App() {
         if (session?.user) {
           const profile = extractProfileFromUser(session.user);
           if (isMounted) setCurrentUser(profile);
-
-          const org = await fetchUserOrganization(session.user.id);
-          if (isMounted) setActiveOrg(org);
+          await loadUserAndOrgs(session.user.id);
         } else {
           if (isMounted) {
             setCurrentUser(null);
             setActiveOrg(null);
+            setUserOrgs([]);
           }
         }
       } catch (err) {
@@ -210,11 +231,11 @@ export default function App() {
       if (session?.user) {
         const profile = extractProfileFromUser(session.user);
         setCurrentUser(profile);
-        const org = await fetchUserOrganization(session.user.id);
-        setActiveOrg(org);
+        await loadUserAndOrgs(session.user.id);
       } else {
         setCurrentUser(null);
         setActiveOrg(null);
+        setUserOrgs([]);
       }
       setAuthLoading(false);
     });
@@ -557,6 +578,40 @@ export default function App() {
     });
   };
 
+  const handleSelectOrganization = (org: UserOrganization) => {
+    setActiveOrg(org);
+    localStorage.setItem('hostara_active_org_id', org.organizationId);
+  };
+
+  const handleCreateOrganizationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOrgNameInput.trim()) return;
+    setIsCreatingOrg(true);
+    try {
+      const slug = newOrgNameInput.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const result = await createOrganizationRPC({
+        name: newOrgNameInput.trim(),
+        slug: slug || `org-${Date.now()}`
+      });
+      const newOrg: UserOrganization = {
+        organizationId: result.id,
+        organizationName: result.name,
+        organizationSlug: result.slug,
+        role: 'owner',
+        status: 'active'
+      };
+      setUserOrgs(prev => [...prev, newOrg]);
+      setActiveOrg(newOrg);
+      localStorage.setItem('hostara_active_org_id', newOrg.organizationId);
+      setIsCreateOrgModalOpen(false);
+      setNewOrgNameInput('');
+    } catch (err: any) {
+      alert(err.message || 'Error al crear la organización');
+    } finally {
+      setIsCreatingOrg(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
@@ -623,6 +678,10 @@ export default function App() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        userOrgs={userOrgs}
+        activeOrg={activeOrg}
+        onSelectOrg={handleSelectOrganization}
+        onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -639,6 +698,7 @@ export default function App() {
           userName={userDisplayName}
           userEmail={currentUser.email}
           avatarUrl={currentUser.avatarUrl}
+          userRole={activeOrg?.role || 'member'}
           onLogout={requestLogout}
           onOpenAccountSettings={() => setIsAccountSettingsModalOpen(true)}
         />
@@ -807,7 +867,56 @@ export default function App() {
           avatarUrl: currentUser.avatarUrl
         }}
         onUpdateUser={handleUpdateUserProfile}
+        activeOrg={activeOrg}
       />
+
+      {/* Modal Crear Organización */}
+      {isCreateOrgModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white border border-black/10 rounded-2xl p-6 w-full max-w-md shadow-xl animate-scale-up space-y-4">
+            <div className="flex items-center justify-between border-b border-black/5 pb-3">
+              <h3 className="font-bold text-sm text-[#2D2D2D]">Crear Nueva Organización</h3>
+              <button
+                onClick={() => setIsCreateOrgModalOpen(false)}
+                className="text-black/40 hover:text-black p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateOrganizationSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold mb-1 text-[#2D2D2D]">Nombre de la Organización *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej. Cancún Luxury Rentals"
+                  value={newOrgNameInput}
+                  onChange={(e) => setNewOrgNameInput(e.target.value)}
+                  className="w-full bg-[#FAFAF8] border border-black/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#2D2D2D]"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateOrgModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-black/5 hover:bg-black/10 text-[#2D2D2D] cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreatingOrg || !newOrgNameInput.trim()}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#2D2D2D] hover:bg-black text-white shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isCreatingOrg ? 'Creando...' : 'Crear Organización'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );
