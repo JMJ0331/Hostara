@@ -29,6 +29,17 @@ import {
   type UserOrganization 
 } from './services/authService';
 import { can } from './lib/permissions';
+import { 
+  fetchProperties, 
+  createProperty as createPropertyDb, 
+  updateProperty as updatePropertyDb, 
+  deleteProperty as deletePropertyDb,
+  fetchPropertyGroups,
+  createPropertyGroup as createPropertyGroupDb,
+  deletePropertyGroup as deletePropertyGroupDb,
+  fetchOwners,
+  createOwner as createOwnerDb
+} from './services/propertyService';
 
 import type { 
   Property, 
@@ -152,26 +163,51 @@ export default function App() {
     return fetch(url, { ...options, headers });
   };
 
-  // Fetch initial data from backend API
+  // Fetch initial data from Supabase & backend
   const fetchAllData = async () => {
+    setIsLoading(true);
     try {
-      const [statsRes, propsRes, resRes, cleanRes, ownersRes, groupsRes] = await Promise.all([
-        apiFetch('/api/stats').then(r => r.json()),
-        apiFetch('/api/properties').then(r => r.json()),
-        apiFetch('/api/reservations').then(r => r.json()),
-        apiFetch('/api/cleaning-tasks').then(r => r.json()),
-        apiFetch('/api/owners').then(r => r.json()),
-        apiFetch('/api/groups').then(r => r.json()).catch(() => [])
+      let propsData: Property[] = [];
+      let ownersData: Owner[] = [];
+      let groupsList: string[] = [];
+
+      if (activeOrg?.organizationId && isSupabaseConfigured) {
+        try {
+          const [dbProps, dbGroups, dbOwners] = await Promise.all([
+            fetchProperties(activeOrg.organizationId),
+            fetchPropertyGroups(activeOrg.organizationId),
+            fetchOwners(activeOrg.organizationId)
+          ]);
+          propsData = dbProps;
+          groupsList = dbGroups.map(g => g.name);
+          ownersData = dbOwners;
+        } catch (dbErr: any) {
+          console.error('Error fetching properties from Supabase:', dbErr);
+          propsData = [];
+        }
+      }
+
+      const [statsRes, resRes, cleanRes] = await Promise.all([
+        apiFetch('/api/stats').then(r => r.json()).catch(() => ({})),
+        apiFetch('/api/reservations').then(r => r.json()).catch(() => []),
+        apiFetch('/api/cleaning-tasks').then(r => r.json()).catch(() => [])
       ]);
 
-      setStats(statsRes);
-      setProperties(propsRes);
-      setReservations(resRes);
-      setCleaningTasks(cleanRes);
-      setOwners(ownersRes);
-      if (Array.isArray(groupsRes)) {
-        setCustomGroupsState(groupsRes);
-      }
+      setProperties(propsData);
+      setOwners(ownersData);
+      setCustomGroupsState(groupsList);
+      setReservations(Array.isArray(resRes) ? resRes : []);
+      setCleaningTasks(Array.isArray(cleanRes) ? cleanRes : []);
+      setStats(statsRes && statsRes.totalRevenue !== undefined ? statsRes : {
+        activeBookings: 0,
+        checkOutsToday: 0,
+        checkInsToday: 0,
+        pendingCleaningCount: 0,
+        totalRevenue: 0,
+        totalCleaningExpenses: 0,
+        netIncome: 0,
+        occupancyRatePercentage: 0
+      });
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -368,44 +404,47 @@ export default function App() {
   };
 
   const handleCreateProperty = async (propData: Partial<Property>) => {
+    if (!activeOrg?.organizationId) {
+      alert('Debes seleccionar una organización activa antes de crear propiedades.');
+      return;
+    }
     try {
-      const response = await apiFetch('/api/properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(propData)
-      });
-      const newProp = await response.json();
-      await fetchAllData();
+      const newProp = await createPropertyDb(activeOrg.organizationId, propData);
+      setProperties(prev => [newProp, ...prev]);
+      if (newProp.group && !customGroupsState.includes(newProp.group)) {
+        setCustomGroupsState(prev => [...prev, newProp.group]);
+      }
       if (propData.icalUrl && newProp.id) {
         await handleSyncSingleICal(newProp.id, undefined, propData.icalUrl);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating property:', error);
+      alert(error.message || 'Error al crear la propiedad');
     }
   };
 
   const handleUpdateProperty = async (id: string, propData: Partial<Property>) => {
+    if (!activeOrg?.organizationId) return;
     try {
-      await apiFetch(`/api/properties/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(propData)
-      });
-      await fetchAllData();
+      const updated = await updatePropertyDb(id, activeOrg.organizationId, propData);
+      setProperties(prev => prev.map(p => p.id === id ? updated : p));
       if (propData.icalUrl) {
         await handleSyncSingleICal(id, undefined, propData.icalUrl);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating property:', error);
+      alert(error.message || 'Error al actualizar la propiedad');
     }
   };
 
   const handleDeleteProperty = async (id: string) => {
+    if (!activeOrg?.organizationId) return;
     try {
-      await apiFetch(`/api/properties/${id}`, { method: 'DELETE' });
-      await fetchAllData();
-    } catch (error) {
+      await deletePropertyDb(id, activeOrg.organizationId);
+      setProperties(prev => prev.filter(p => p.id !== id));
+    } catch (error: any) {
       console.error('Error deleting property:', error);
+      alert(error.message || 'Error al eliminar la propiedad');
     }
   };
 
@@ -445,15 +484,13 @@ export default function App() {
   };
 
   const handleAddOwner = async (ownerData: Partial<Owner>) => {
+    if (!activeOrg?.organizationId) return;
     try {
-      await apiFetch('/api/owners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ownerData)
-      });
-      await fetchAllData();
-    } catch (error) {
+      const newOwner = await createOwnerDb(activeOrg.organizationId, ownerData);
+      setOwners(prev => [...prev, newOwner]);
+    } catch (error: any) {
       console.error('Error adding owner:', error);
+      alert(error.message || 'Error al registrar el propietario');
     }
   };
 
@@ -481,15 +518,13 @@ export default function App() {
 
   // Group / Complex CRUD
   const handleAddGroup = async (name: string) => {
+    if (!activeOrg?.organizationId || !name.trim()) return;
     try {
-      await apiFetch('/api/groups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      await fetchAllData();
-    } catch (error) {
+      await createPropertyGroupDb(activeOrg.organizationId, name.trim());
+      setCustomGroupsState(prev => Array.from(new Set([...prev, name.trim()])));
+    } catch (error: any) {
       console.error('Error adding group:', error);
+      alert(error.message || 'Error al agregar el complejo');
     }
   };
 
@@ -724,6 +759,7 @@ export default function App() {
             <PropertiesView
               properties={filteredProperties}
               groups={groups}
+              userRole={activeOrg?.role}
               onOpenNewPropModal={() => {
                 setEditingProperty(null);
                 setIsNewPropModalOpen(true);

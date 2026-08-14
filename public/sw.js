@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hostara-pwa-v4';
+const CACHE_NAME = 'hostara-pwa-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -43,6 +43,18 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET requests or chrome-extension requests
   if (request.method !== 'GET' || url.protocol === 'chrome-extension:') {
+    return;
+  }
+
+  // Never cache dev or hot-reload assets
+  if (
+    url.pathname.includes('@') ||
+    url.pathname.includes('/src/') ||
+    url.pathname.includes('node_modules') ||
+    url.pathname.includes('/@vite/') ||
+    url.search.includes('v=') ||
+    url.search.includes('t=')
+  ) {
     return;
   }
 

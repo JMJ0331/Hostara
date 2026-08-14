@@ -17,10 +17,12 @@ import {
   Copy
 } from 'lucide-react';
 import type { Property } from '../types';
+import { can, type UserRole } from '../lib/permissions';
 
 interface PropertiesViewProps {
   properties: Property[];
   groups: string[];
+  userRole?: string;
   onOpenNewPropModal: () => void;
   onOpenManageGroupsModal: () => void;
   onEditProperty: (prop: Property) => void;
@@ -31,6 +33,7 @@ interface PropertiesViewProps {
 export const PropertiesView: React.FC<PropertiesViewProps> = ({
   properties,
   groups,
+  userRole = 'owner',
   onOpenNewPropModal,
   onOpenManageGroupsModal,
   onEditProperty,
@@ -39,6 +42,11 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
 }) => {
   const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>('ALL');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const role = (userRole as UserRole) || 'member';
+  const canCreate = can(role, 'properties.create');
+  const canUpdate = can(role, 'properties.update');
+  const canDelete = can(role, 'properties.delete');
 
   const filteredProperties = selectedGroupFilter === 'ALL'
     ? properties
@@ -91,20 +99,24 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
         </div>
 
         <div className="flex flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <button
-            onClick={onOpenManageGroupsModal}
-            className="btn-secondary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
-          >
-            <Building className="w-4 h-4 text-[#2D2D2D] shrink-0" />
-            <span>Gestionar Complejos</span>
-          </button>
-          <button
-            onClick={onOpenNewPropModal}
-            className="btn-primary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span>Añadir Propiedad</span>
-          </button>
+          {canCreate && (
+            <button
+              onClick={onOpenManageGroupsModal}
+              className="btn-secondary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
+            >
+              <Building className="w-4 h-4 text-[#2D2D2D] shrink-0" />
+              <span>Gestionar Complejos</span>
+            </button>
+          )}
+          {canCreate && (
+            <button
+              onClick={onOpenNewPropModal}
+              className="btn-primary text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial justify-center whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Añadir Propiedad</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -141,8 +153,14 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
 
       {/* Properties List Grouped by Complex */}
       {Object.keys(groupedProperties).length === 0 ? (
-        <div className="rm-card p-12 text-center text-black/40 text-xs">
-          No hay propiedades en este complejo. Haz clic en "+ Añadir Propiedad".
+        <div className="rm-card p-12 text-center text-black/50 text-xs space-y-3">
+          <Home className="w-8 h-8 text-black/20 mx-auto" />
+          <p className="font-medium text-[#2D2D2D]">No hay propiedades registradas en esta organización.</p>
+          {canCreate ? (
+            <p className="text-black/40">Haz clic en "+ Añadir Propiedad" para dar de alta tu primera unidad.</p>
+          ) : (
+            <p className="text-black/40">No tienes permisos para crear propiedades en esta organización.</p>
+          )}
         </div>
       ) : (
         (Object.entries(groupedProperties) as [string, Property[]][]).map(([groupName, props]) => (
@@ -249,21 +267,25 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between pt-1 text-xs">
-                      <button
-                        onClick={() => onEditProperty(prop)}
-                        className="text-[#2D2D2D] hover:underline font-medium flex items-center gap-1"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                        <span>Editar</span>
-                      </button>
+                      {canUpdate ? (
+                        <button
+                          onClick={() => onEditProperty(prop)}
+                          className="text-[#2D2D2D] hover:underline font-medium flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Editar</span>
+                        </button>
+                      ) : <span />}
 
-                      <button
-                        onClick={() => onDeleteProperty(prop.id, prop.name)}
-                        className="text-rose-600 hover:underline text-[11px] flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3 h-3 text-rose-500" />
-                        <span>Eliminar</span>
-                      </button>
+                      {canDelete ? (
+                        <button
+                          onClick={() => onDeleteProperty(prop.id, prop.name)}
+                          className="text-rose-600 hover:underline text-[11px] flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3 text-rose-500" />
+                          <span>Eliminar</span>
+                        </button>
+                      ) : null}
                     </div>
 
                   </div>
