@@ -148,3 +148,7 @@ CREATE INDEX IF NOT EXISTS idx_properties_group_id ON public.properties(group_id
 CREATE INDEX IF NOT EXISTS idx_properties_owner_id ON public.properties(owner_id);
 CREATE INDEX IF NOT EXISTS idx_property_groups_org_id ON public.property_groups(organization_id);
 CREATE INDEX IF NOT EXISTS idx_owners_org_id ON public.owners(organization_id);
+
+-- Notify PostgREST to reload schema cache
+NOTIFY pgrst, 'reload schema';
+

@@ -162,6 +162,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
+-- Grant execution to authenticated users
+GRANT EXECUTE ON FUNCTION public.get_user_org_role(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.has_org_role(UUID, TEXT[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_org_member(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.manage_organization_member(UUID, TEXT, TEXT, TEXT, TEXT) TO authenticated;
+
 -- 4. Refine RLS for Financials (Restricting cleaner/member roles from accessing financial transactions)
 DROP POLICY IF EXISTS "Tenant isolation for financial_transactions" ON public.financial_transactions;
 
@@ -171,3 +177,7 @@ CREATE POLICY "Financials tenant isolation with role check"
     public.is_org_member(organization_id) AND
     public.has_org_role(organization_id, ARRAY['owner', 'admin', 'host'])
   );
+
+-- Notify PostgREST to reload schema cache
+NOTIFY pgrst, 'reload schema';
+

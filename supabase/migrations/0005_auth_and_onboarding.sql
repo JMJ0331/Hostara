@@ -65,6 +65,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
+-- Grant execution permissions to authenticated users
+GRANT EXECUTE ON FUNCTION public.create_organization_for_user(TEXT, TEXT, TEXT) TO authenticated;
+
 -- 2. Clean up anonymous bypass policies and enforce strict JWT-authenticated RLS
 
 -- Drop old policies on organizations and organization_members
@@ -197,3 +200,7 @@ CREATE POLICY "Tenant isolation for financial_transactions"
 CREATE POLICY "Tenant isolation for notifications"
   ON public.notifications FOR ALL TO authenticated
   USING (public.is_org_member(organization_id));
+
+-- Notify PostgREST to reload schema cache
+NOTIFY pgrst, 'reload schema';
+
