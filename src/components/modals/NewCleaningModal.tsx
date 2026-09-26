@@ -25,10 +25,10 @@ export const NewCleaningModal: React.FC<NewCleaningModalProps> = ({
 
   const [propertyId, setPropertyId] = useState<string>(properties[0]?.id || '');
   const [scheduledDate, setScheduledDate] = useState<string>(todayStr);
-  const [assignedCleaner, setAssignedCleaner] = useState<string>('María Sánchez');
-  const [cleanerPhone, setCleanerPhone] = useState<string>('+52 998 111 2233');
-  const [cost, setCost] = useState<number | ''>(45);
-  const [notes, setNotes] = useState<string>('Cambio de ropa de cama y sanitización de baños');
+  const [assignedCleaner, setAssignedCleaner] = useState<string>('');
+  const [cleanerPhone, setCleanerPhone] = useState<string>('');
+  const [cost, setCost] = useState<number | ''>('');
+  const [notes, setNotes] = useState<string>('');
 
   if (!isOpen) return null;
 

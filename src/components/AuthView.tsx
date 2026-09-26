@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Building2, Mail, Lock, Eye, EyeOff, Check, KeyRound, ArrowLeft, AlertCircle, User, Phone } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, Check, KeyRound, ArrowLeft, AlertCircle, User, Phone, ChevronDown } from 'lucide-react';
 import { 
   signInWithSupabase, 
   signUpWithSupabase, 
+  checkEmailExists,
   sendPasswordResetEmail, 
   updateSupabasePassword 
 } from '../services/authService';
@@ -21,13 +22,25 @@ interface AuthViewProps {
 
 type AuthMode = 'login' | 'register' | 'forgot_password' | 'reset_password';
 
+// Ladas RD — Hostara opera inicialmente en República Dominicana
+const RD_AREA_CODES = ['809', '829', '849'] as const;
+
+// Parte local de 7 dígitos con máscara 000-0000
+function formatRDLocal(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 7);
+  if (digits.length <= 3) return digits;
+  return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+}
+
 export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   const [mode, setMode] = useState<AuthMode>('login');
 
   // Form states
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [areaCode, setAreaCode] = useState<string>('809');
+  const [phoneLocal, setPhoneLocal] = useState('');
+  const fullPhone = phoneLocal ? `+1 (${areaCode}) ${phoneLocal}` : '';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,6 +59,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   const clearAlerts = () => {
     setError(null);
     setSuccessMsg(null);
+  };
+
+  // Switch auth mode without leaking credentials between forms.
+  // Login -> Register must not prefill email/password from the login attempt.
+  const switchMode = (next: AuthMode) => {
+    setMode(next);
+    clearAlerts();
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    if (next === 'register') {
+      setEmail('');
+    }
   };
 
   // Handle Login with Supabase Auth
@@ -114,7 +141,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
         password,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phone.trim()
+        phone: fullPhone
       });
 
       if (data.user && data.session) {
@@ -124,7 +151,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
           email: data.user.email || email,
           firstName,
           lastName,
-          phone
+          phone: fullPhone
         });
       } else if (data.user) {
         // Confirmation email sent
@@ -157,11 +184,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
 
     setIsLoading(true);
     try {
+      const exists = await checkEmailExists(email.trim());
+      if (!exists) {
+        setError('No existe una cuenta registrada con ese correo electrónico. Verifica el correo o crea una cuenta.');
+        return;
+      }
       await sendPasswordResetEmail(email.trim());
       setSuccessMsg('Te hemos enviado un enlace de recuperación a tu correo electrónico. Revisa tu bandeja de entrada.');
     } catch (err: any) {
       console.error('Forgot password error:', err);
-      setError(err.message || 'Error al solicitar la recuperación de contraseña.');
+      if (err.message?.includes('check_email_exists') || err.message?.includes('schema cache')) {
+        setError('Falta aplicar la migración 0008_check_email_exists en Supabase para verificar el correo.');
+      } else {
+        setError(err.message || 'Error al solicitar la recuperación de contraseña.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -225,7 +261,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
           <div className="grid grid-cols-2 p-1 bg-[#F4F4F2] rounded-2xl gap-1 text-xs font-semibold">
             <button
               type="button"
-              onClick={() => { setMode('login'); clearAlerts(); }}
+              onClick={() => switchMode('login')}
               className={`py-2 rounded-xl transition-all ${
                 mode === 'login'
                   ? 'bg-white text-[#2D2D2D] shadow-xs'
@@ -236,7 +272,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
             </button>
             <button
               type="button"
-              onClick={() => { setMode('register'); clearAlerts(); }}
+              onClick={() => switchMode('register')}
               className={`py-2 rounded-xl transition-all ${
                 mode === 'register'
                   ? 'bg-white text-[#2D2D2D] shadow-xs'
@@ -354,32 +390,54 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-black/70 mb-1">Teléfono Móvil</label>
-              <div className="relative">
-                <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+52 998 123 4567"
-                  className="w-full pl-9 pr-3 py-2 bg-[#F4F4F2] border border-black/10 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2D2D2D] focus:bg-white transition-all text-[#2D2D2D]"
-                />
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-xs font-semibold text-black/70 mb-1">Teléfono Móvil</label>
+                <div className="flex gap-1.5">
+                  <div className="relative shrink-0">
+                    <select
+                      value={areaCode}
+                      onChange={(e) => setAreaCode(e.target.value)}
+                      aria-label="Código de país y área"
+                      className="w-fit appearance-none whitespace-nowrap pl-2 pr-7 py-2 bg-[#F4F4F2] border border-black/10 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2D2D2D] focus:bg-white transition-all text-[#2D2D2D]"
+                    >
+                      {RD_AREA_CODES.map((code) => (
+                        <option key={code} value={code}>
+                          +1 {code}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-black/40 pointer-events-none" />
+                  </div>
+                  <div className="relative flex-1 min-w-0">
+                    <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={phoneLocal}
+                      onChange={(e) => setPhoneLocal(formatRDLocal(e.target.value))}
+                      placeholder="123-4567"
+                      maxLength={8}
+                      className="w-full pl-9 pr-3 py-2 bg-[#F4F4F2] border border-black/10 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2D2D2D] focus:bg-white transition-all text-[#2D2D2D]"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-black/70 mb-1">Correo Electrónico</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ejemplo@dominio.com"
-                  className="w-full pl-9 pr-3 py-2 bg-[#F4F4F2] border border-black/10 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2D2D2D] focus:bg-white transition-all text-[#2D2D2D]"
-                />
+              <div>
+                <label className="block text-xs font-semibold text-black/70 mb-1">Correo Electrónico</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ejemplo@dominio.com"
+                    className="w-full pl-9 pr-3 py-2 bg-[#F4F4F2] border border-black/10 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2D2D2D] focus:bg-white transition-all text-[#2D2D2D]"
+                  />
+                </div>
               </div>
             </div>
 

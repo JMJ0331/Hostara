@@ -76,6 +76,26 @@ export async function signUpWithSupabase(params: {
 }
 
 /**
+ * Check if an email has a Supabase Auth account.
+ * Requires migration 0008_check_email_exists.sql applied in Supabase.
+ */
+export async function checkEmailExists(email: string): Promise<boolean> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase no está configurado.');
+  }
+
+  const { data, error } = await supabase.rpc('check_email_exists', {
+    p_email: email.trim(),
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data);
+}
+
+/**
  * Send Password Reset Email
  */
 export async function sendPasswordResetEmail(email: string) {

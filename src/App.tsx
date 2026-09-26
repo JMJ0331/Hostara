@@ -108,11 +108,7 @@ export default function App() {
   const [selectedReservationToEdit, setSelectedReservationToEdit] = useState<Reservation | null>(null);
 
   // Cleaners state
-  const [cleaners, setCleaners] = useState<CleanerStaff[]>([
-    { id: '1', name: 'María Sánchez', phone: '+52 998 111 2233', notes: 'Turno Mañana - Zona Cancún Center', active: true },
-    { id: '2', name: 'Ana Martínez', phone: '+52 998 222 3344', notes: 'Turno Tarde - Unidades Complejo Rialto', active: true },
-    { id: '3', name: 'Rosa Gómez', phone: '+52 998 333 4455', notes: 'Atención especial fines de semana', active: true }
-  ]);
+  const [cleaners, setCleaners] = useState<CleanerStaff[]>([]);
 
   const handleAddCleaner = (cleanerData: Omit<CleanerStaff, 'id' | 'active'>) => {
     const newCleaner: CleanerStaff = {
